@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "enum": [
+            "cifar10"
+          ]
+        },
+        "image_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pixel_depth": {
+          "type": "number",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "dataset",
+        "image_size",
+        "pixel_depth"
+      ]
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "num_blocks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "num_flows": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "squeezing_factor": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "permutation_type": {
+          "enum": [
+            "conv",
+            "shuffle",
+            "reverse"
+          ]
+        },
+        "coupling_type": {
+          "enum": [
+            "additive",
+            "affine"
+          ]
+        },
+        "num_filters": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kernel_size": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "num_blocks",
+        "num_flows",
+        "squeezing_factor",
+        "permutation_type",
+        "coupling_type",
+        "num_filters",
+        "kernel_size"
+      ]
+    },
+    "training": {
+      "type": "object",
+      "properties": {
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lr": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lr_scheduler_patience": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "batch_size",
+        "lr",
+        "lr_scheduler_patience"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "model",
+    "training"
+  ]
+}

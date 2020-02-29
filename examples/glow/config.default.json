@@ -1,0 +1,21 @@
+{
+  "data": {
+    "dataset": "cifar10",
+    "image_size": 32,
+    "pixel_depth": 8
+  },
+  "model": {
+    "num_blocks": 3,
+    "num_flows": 32,
+    "squeezing_factor": 2,
+    "permutation_type": "conv",
+    "coupling_type": "affine",
+    "num_filters": 512,
+    "kernel_size": 3
+  },
+  "training": {
+    "batch_size": 32,
+    "lr": 1e-4,
+    "lr_scheduler_patience": 3
+  }
+}

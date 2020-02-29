@@ -1,0 +1,10 @@
+{
+  "data": {
+    "val_split": 0.2
+  },
+  "training": {
+    "batch_size": 64,
+    "lr": 1,
+    "lr_gamma": 0.7
+  }
+}

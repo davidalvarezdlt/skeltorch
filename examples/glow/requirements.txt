@@ -1,0 +1,4 @@
+skeltorch
+tensorboard
+torch
+torchvision

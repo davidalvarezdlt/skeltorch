@@ -302,9 +302,9 @@ class Runner:
         self.optimizer.load_state_dict(checkpoint_data['optimizer'])
         random.setstate(checkpoint_data['random_states'][0])
         np.random.set_state(checkpoint_data['random_states'][1])
-        torch.set_rng_state(checkpoint_data['random_states'][2])
+        torch.set_rng_state(checkpoint_data['random_states'][2].cpu())
         if torch.cuda.is_available() and checkpoint_data['random_states'][3] is not None:
-            torch.cuda.set_rng_state(checkpoint_data['random_states'][3])
+            torch.cuda.set_rng_state(checkpoint_data['random_states'][3].cpu())
         self.counters = checkpoint_data['counters']
         self.losses_epoch = checkpoint_data['losses']
         self.load_states_others(checkpoint_data)

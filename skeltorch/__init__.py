@@ -71,7 +71,7 @@ class Skeltorch:
         init_subparser.add_argument('--config-schema-path', type=str, default=None,
                                     help='Configuration schema file path')
         init_subparser.add_argument('--seed', type=int, default=0, help='Seed for random value generators')
-        train_subparser.add_argument('--epoch', type=int, required=True,
+        train_subparser.add_argument('--epoch', type=int, default=None,
                                      help='Starting epoch from which continue the training')
         train_subparser.add_argument('--max-epochs', type=int, default=999, help='Maximum number of epochs to perform')
         train_subparser.add_argument('--log-period', type=int, default=100, help='Number of iterations between logs')

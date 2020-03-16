@@ -86,12 +86,17 @@
         "lr_scheduler_patience": {
           "type": "integer",
           "minimum": 0
+        },
+        "early_stopping_patience": {
+          "type": "integer",
+          "minimum": 0
         }
       },
       "required": [
         "batch_size",
         "lr",
-        "lr_scheduler_patience"
+        "lr_scheduler_patience",
+        "early_stopping_patience"
       ]
     }
   },

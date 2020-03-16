@@ -1,4 +1,3 @@
 skeltorch
 tensorboard
 torch
-torchvision

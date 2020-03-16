@@ -5,7 +5,7 @@ dataset, which contains a total of 60.000 images of numbers ranging from 0 to 9.
 The model used in this example is the same used in the 
 [example provided by PyTorch](https://github.com/pytorch/examples/tree/master/mnist). You can check and download the 
 files exposed in this tutorial from our 
-[official GitHub Repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/mnist_classifier).
+[official GitHub repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/mnist_classifier).
 
 You can also download a sample experiment of this project trained for ``--max-epochs 10`` from 
 [this link](https://storage.googleapis.com/skeltorch/skeltorch_mnist_example.zip).
@@ -50,7 +50,7 @@ We could decide to also include configuration parameters related to the design o
 keep things simple, we will assume that the model is already defined an immutable.
 
 Extra: in order to validate it, we create an auxiliary file named ``config.schema.json``. You can check it in our GitHub
-repository if you are interested on creating them for your own projects.
+repository if you are interested in creating them for your own projects.
 
 ## 3. Data class
 The first class that we have to extend is ``skeltorch.Data``. This class serves as an interface between the file system 
@@ -129,7 +129,7 @@ purpose are samplers, which define a procedure to extract data from a dataset. S
 epoch.
 
 For the case of the test split, as there already exists a unique ``torch.utils.data.Dataset`` object, we can simply set
-``shuffle=True`` to shuffle the data on every epoch. We will extract the batch size from the configuration file.
+``shuffle=True`` to shuffle the data on every epoch. We will extract the batch size from the configuration file:
 
 ```
 def load_loaders(self, data_path, num_workers):
@@ -307,7 +307,7 @@ python -m mnist_classifier --experiment-name mnist_example test --epoch 10
 Where ``--epoch`` may receive any epoch from which the checkpoint exists. 
 
 ## 7. Visualizing the results
-Skeltorch comes with two ways of visualizing results. The simplest one is the file ``verbose.log`` stored inside every
+Skeltorch comes with two ways of visualizing results. The simplest one is the ``verbose.log`` file stored inside every
 experiment, containing a complete log of everything that has happened since its creation:
 
 ```

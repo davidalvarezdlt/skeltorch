@@ -16,6 +16,7 @@
   "training": {
     "batch_size": 32,
     "lr": 1e-4,
-    "lr_scheduler_patience": 3
+    "lr_scheduler_patience": 2,
+    "early_stopping_patience": 5
   }
 }

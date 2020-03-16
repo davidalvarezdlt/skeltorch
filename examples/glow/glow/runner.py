@@ -44,11 +44,13 @@ class GlowRunner(skeltorch.Runner):
 
     def train_after_epoch_tasks(self, device):
         super().train_after_epoch_tasks(device)
+        self.scheduler.step(self.losses_epoch['validation'][self.counters['epoch']], self.counters['epoch'])
         self.test(None, device)
 
     def train_early_stopping(self):
         best_epoch = min(self.losses_epoch['validation'], key=self.losses_epoch['validation'].get)
-        return True if self.counters['epoch'] - best_epoch > 5 else False
+        early_stopping_patience = self.experiment.configuration.get('training', 'early_stopping_patience')
+        return True if self.counters['epoch'] - best_epoch > early_stopping_patience else False
 
     def test(self, epoch, device):
         # Check if test has a forced epoch to load objects and restore checkpoint

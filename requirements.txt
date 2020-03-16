@@ -3,3 +3,4 @@ numpy
 tensorboard
 tensorboardX
 torch
+torchvision

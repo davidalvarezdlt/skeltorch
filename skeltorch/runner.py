@@ -132,7 +132,6 @@ class Runner:
                 self.optimizer.step()
                 e_train_losses.append(it_loss.item())
                 if self.counters['train_it'] % log_period == 0:
-                    self.losses_it['train'][self.counters['train_it']] = np.mean(e_train_losses[-log_period:])
                     self.train_iteration_log(e_train_losses, log_period, device)
 
             # Run Validation
@@ -144,13 +143,7 @@ class Runner:
                     it_loss = self.train_step(it_data, device)
                 e_validation_losses.append(it_loss.item())
                 if self.counters['validation_it'] % log_period == 0:
-                    self.losses_it['validation'][self.counters['validation_it']] = np.mean(
-                        e_validation_losses[-log_period:])
                     self.validation_iteration_log(e_validation_losses, log_period, device)
-
-            # Compute epoch mean losses for both train and validation
-            self.losses_epoch['train'][self.counters['epoch']] = np.mean(e_train_losses)
-            self.losses_epoch['validation'][self.counters['epoch']] = np.mean(e_validation_losses)
 
             # Log Train
             self.train_epoch_log(e_train_losses, device)
@@ -204,6 +197,7 @@ class Runner:
             log_period (int): ``--log-period`` command argument.
             device (str): ``--device`` command argument.
         """
+        self.losses_it['train'][self.counters['train_it']] = np.mean(e_train_losses[-log_period:])
         self.logger.info('Train Iteration {} - Loss {:.3f}'.format(
             self.counters['train_it'], self.losses_it['train'][self.counters['train_it']])
         )
@@ -220,6 +214,7 @@ class Runner:
             e_train_losses (list): List containing all train losses of the epoch.
             device (str): ``--device`` command argument.
         """
+        self.losses_epoch['train'][self.counters['epoch']] = np.mean(e_train_losses)
         self.experiment.tbx.add_scalar(
             'loss/epoch/train', self.losses_epoch['train'][self.counters['epoch']], self.counters['epoch']
         )
@@ -235,6 +230,7 @@ class Runner:
             log_period (int): ``--log-period`` command argument.
             device (str): ``--device`` command argument.
         """
+        self.losses_it['validation'][self.counters['validation_it']] = np.mean(e_validation_losses[-log_period:])
         self.logger.info('Validation Iteration {} - Loss {:.3f}'.format(
             self.counters['validation_it'], self.losses_it['validation'][self.counters['validation_it']])
         )
@@ -252,6 +248,7 @@ class Runner:
             e_validation_losses (list): List containing all validation losses of the epoch.
             device (str): ``--device`` command argument.
         """
+        self.losses_epoch['validation'][self.counters['epoch']] = np.mean(e_validation_losses)
         self.experiment.tbx.add_scalar(
             'loss/epoch/validation', self.losses_epoch['validation'][self.counters['epoch']], self.counters['epoch']
         )
@@ -306,7 +303,12 @@ class Runner:
         if torch.cuda.is_available() and checkpoint_data['random_states'][3] is not None:
             torch.cuda.set_rng_state(checkpoint_data['random_states'][3].cpu())
         self.counters = checkpoint_data['counters']
-        self.losses_epoch = checkpoint_data['losses']
+        # Compatibility purposes until next release
+        if 'losses' in checkpoint_data:
+            self.losses_epoch = checkpoint_data['losses']
+        else:
+            self.losses_epoch = checkpoint_data['losses_epoch']
+            self.losses_it = checkpoint_data['losses_it']
         self.load_states_others(checkpoint_data)
 
     def load_states_others(self, checkpoint_data):
@@ -327,7 +329,8 @@ class Runner:
             torch.cuda.is_available() else None
         )
         checkpoint_data['counters'] = self.counters
-        checkpoint_data['losses'] = self.losses_epoch
+        checkpoint_data['losses_epoch'] = self.losses_epoch
+        checkpoint_data['losses_it'] = self.losses_it
         checkpoint_data.update(self.save_states_others())
         self.experiment.checkpoint_save(checkpoint_data, self.counters['epoch'])
 

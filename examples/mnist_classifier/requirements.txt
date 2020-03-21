@@ -1,3 +1,4 @@
 skeltorch
-tensorboard
+tensorboardX
 torch
+torchvision

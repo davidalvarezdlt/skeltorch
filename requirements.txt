@@ -1,6 +1,4 @@
 jsonschema
 numpy
-tensorboard
 tensorboardX
 torch
-torchvision

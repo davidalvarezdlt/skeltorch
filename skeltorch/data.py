@@ -22,6 +22,8 @@ class Data:
     logger = None
     datasets = {'train': None, 'validation': None, 'test': None}
     loaders = {'train': None, 'validation': None, 'test': None}
+    _dont_save_atts = {'_dont_save_atts', '__dict__', '__module__', '__doc__', '__weakref__', 'datasets', 'experiment',
+                       'loaders', 'logger'}
 
     def __init__(self):
         """``skeltorch.Data`` constructor."""
@@ -101,6 +103,9 @@ class Data:
         """
         with open(data_file_path, 'wb') as data_file:
             data = dict()
-            for attr, value in self.__dict__.items():
-                data[attr] = value
+            attrs_list = [
+                att for att in dir(self) if not callable(self.__getattribute__(att)) and att not in self._dont_save_atts
+            ]
+            for att in attrs_list:
+                data[att] = self.__getattribute__(att)
             pickle.dump(data, data_file)

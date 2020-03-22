@@ -1,4 +1,5 @@
 # Skeltorch: light-weight framework for PyTorch projects
+[![Downloads](https://pepy.tech/badge/skeltorch)](https://pepy.tech/project/skeltorch)
 [![Documentation Status](https://readthedocs.org/projects/skeltorch/badge/?version=latest)](https://skeltorch.readthedocs.io/en/latest/?badge=latest)
 
 ## What is Skeltorch?

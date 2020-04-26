@@ -23,6 +23,7 @@ represented by a different experiment. Every experiment is uniquely identified b
 - Automatic logging using the native Python logging package.
 - Automatic handling of random seeds, specified during the creation of an experiment.
 - Easy implementation of custom pipelines.
+- (NEW) Automatic handling of multi-GPU training. 
 
 ## Installing Skeltorch
 Use ``pip`` to install Skeltorch in your virtual environment:

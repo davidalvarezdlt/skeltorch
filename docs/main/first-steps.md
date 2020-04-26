@@ -124,7 +124,7 @@ import skeltorch
 
 class MyRunnerClass(skeltorch.Runner):
     
-    def test(self, epoch, device):
+    def test(self, epoch, devices):
         pass
 ```
 

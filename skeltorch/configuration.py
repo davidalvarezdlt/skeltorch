@@ -24,7 +24,6 @@ class Configuration:
             logger (logging.Logger): Logger object.
         """
         self.logger = logger
-        self._others = {}
 
     def create(self, config_path, config_schema_path=None):
         """Loads (and validates) a raw configuration file.
@@ -41,6 +40,8 @@ class Configuration:
             json.decoder.JSONDecodeError: Raised when the format of one of the `.json` files is not valid.
             jsonschema.exceptions.ValidationError: Raised when the configuration file does not match the schema.
         """
+        if not config_schema_path:
+            self.logger.warning('Configuration schema not provided. The configuration file will not be validated.')
         with open(config_path, 'r') as config_file:
             config_content = json.load(config_file)
         if config_schema_path:

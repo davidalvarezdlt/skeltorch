@@ -350,5 +350,5 @@ Train Iteration 4710 - Loss 3.731
 However, the best way to visualize results is using TensorBoard. You can initialize it by calling:
 
 ```
-tensorboard --logdir experiments/glow_example
+python -m glow --experiment-name glow_example tensorboard
 ```

@@ -55,7 +55,8 @@ class GlowRunner(skeltorch.Runner):
     def test(self, epoch, device):
         # Check if test has a forced epoch to load objects and restore checkpoint
         if epoch is not None and epoch not in self.experiment.checkpoints_get():
-            raise ValueError('Epoch {} not found.'.format(epoch))
+            self.logger.error('Epoch {} not found.'.format(epoch))
+            exit()
         elif epoch is not None:
             self.load_states(epoch, device)
 

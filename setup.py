@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="skeltorch",
-    version="1.0.0b4",
+    version="1.1.0b1",
     author="David Álvarez de la Torre",
     author_email="davidalvarezdlt@gmail.com",
     description="Light-weight framework that helps researchers to prototype faster using PyTorch.",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/davidalvarezdlt/skeltorch",
     packages=setuptools.find_packages(),
-    install_requires=['jsonschema', 'numpy', 'tensorboardX', 'torch'],
+    install_requires=['jsonschema', 'numpy', 'tensorboard', 'tensorboardX', 'torch'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

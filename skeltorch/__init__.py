@@ -42,7 +42,7 @@ class Skeltorch:
             runner (skeltorch.Runner): custom runner object.
         """
         self._init_logger()
-        self.execution = Execution(self.logger)
+        self.execution = Execution()
         self.configuration = Configuration(self.logger)
         self.data = data
         self.experiment = Experiment(self.configuration, self.data, self.logger)
@@ -63,10 +63,12 @@ class Skeltorch:
                                   help='Base path from which other default paths are referenced')
         self._parser.add_argument('--experiments-path', help='Experiments path')
         self._parser.add_argument('--data-path', help='Data path')
-        self._parser.add_argument('--verbose', action='store_false', help='Whether to log to standard output')
+        self._parser.add_argument('--verbose', action='store_true', help='Log to standard output')
         init_subparser = self.create_parser('init')
+        info_subparser = self.create_parser('info')
         train_subparser = self.create_parser('train')
         test_subparser = self.create_parser('test')
+        tensorboard_subparser = self.create_parser('tensorboard')
         init_subparser.add_argument('--config-path', type=str, required=True, help='Configuration file path')
         init_subparser.add_argument('--config-schema-path', type=str, default=None,
                                     help='Configuration schema file path')
@@ -76,18 +78,24 @@ class Skeltorch:
         train_subparser.add_argument('--max-epochs', type=int, default=999, help='Maximum number of epochs to perform')
         train_subparser.add_argument('--log-period', type=int, default=100, help='Number of iterations between logs')
         train_subparser.add_argument('--num-workers', type=int, default=1, help='Number of DataLoader workers')
-        train_subparser.add_argument('--device', default='cpu', help='PyTorch-friendly device name')
+        train_subparser.add_argument('--device', nargs='+', default=None, help='PyTorch-friendly device names')
         test_subparser.add_argument('--epoch', type=int, required=True, help='Epoch from which run the test')
         test_subparser.add_argument('--num-workers', type=int, default=1, help='Number of DataLoader workers')
-        test_subparser.add_argument('--device', default='cpu', help='PyTorch-friendly device name')
+        test_subparser.add_argument('--device', nargs='+', default=None, help='PyTorch-friendly device names')
+        tensorboard_subparser.add_argument('--port', default=6006, help='Port where to run TensorBoard')
+        tensorboard_subparser.add_argument('--dev', action='store_true', help='Use TensorBoard.dev')
+        tensorboard_subparser.add_argument('--compare', action='store_true', help='Run TensorBoard on all experiments')
 
     def _init_default_commands(self):
-        init_args = ['data_path', 'config_path', 'config_schema_path', 'seed']
+        init_args = ['data_path', 'config_path', 'config_schema_path', 'verbose']
         train_args = ['epoch', 'max_epochs', 'log_period', 'device']
         test_args = ['epoch', 'device']
+        tensorboard_args = ['port', 'dev', 'compare', 'experiments_path']
         self.create_command(self._subparsers['init'], self.experiment.create, init_args)
+        self.create_command(self._subparsers['info'], self.experiment.info, [])
         self.create_command(self._subparsers['train'], self.runner.train, train_args)
         self.create_command(self._subparsers['test'], self.runner.test, test_args)
+        self.create_command(self._subparsers['tensorboard'], self.experiment.run_tensorboard, tensorboard_args)
 
     def get_parser(self, command_name):
         """Gets an already-created parser.
@@ -136,13 +144,17 @@ class Skeltorch:
         """Runs a Skeltorch project."""
         self.execution.load(self._parser.parse_args())
         self.experiment.init(self.execution.args['experiment_name'], self.execution.args['experiments_path'])
-        if self.execution.command != 'init':
+        self.data.init(self.experiment, self.logger)
+        if self.execution.command not in ['init']:
             self.experiment.load(
                 data_path=self.execution.args['data_path'],
                 num_workers=self.execution.args['num_workers'] if 'num_workers' in self.execution.args else 1,
                 verbose=self.execution.args['verbose']
             )
+        if self.execution.command not in ['init', 'tensorboard', 'info']:
             self.runner.init(self.experiment, self.logger, self.execution.args['device'])
         command_handler, command_args_keys = self._commandHandlers[self.execution.command]
         commands_args = {command_arg_key: self.execution.args[command_arg_key] for command_arg_key in command_args_keys}
+        if command_handler == self.runner.test:  # Compatibility purposes until next release
+            commands_args['device'] = commands_args['device'][0]
         command_handler(**commands_args)

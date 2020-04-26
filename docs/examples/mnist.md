@@ -329,5 +329,5 @@ Train Iteration 2500 - Loss 0.042
 However, the best way to visualize results is using TensorBoard. You can initialize it by calling:
 
 ```
-tensorboard --logdir experiments/mnist_example
+python -m mnist_classifier --experiment-name mnist_example tensorboard
 ```

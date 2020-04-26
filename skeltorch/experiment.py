@@ -3,8 +3,6 @@ import os
 import re
 import torch
 import tensorboardX
-import random
-import numpy as np
 
 
 class Experiment:
@@ -60,31 +58,29 @@ class Experiment:
         self.paths['data'] = os.path.join(self.paths['experiment'], 'data.pkl')
         self.paths['log'] = os.path.join(self.paths['experiment'], 'verbose.log')
 
+    def _init_loggers(self, verbose):
+        logger_handler = logging.FileHandler(self.paths['log'])
+        logger_handler.setFormatter(self.logger.parent.handlers[0].formatter)
+        self.logger.addHandler(logger_handler)
+        self.logger.propagate = verbose
+        self.tbx = tensorboardX.SummaryWriter(self.paths['tensorboard'], flush_secs=10)
+
     def load(self, data_path, num_workers, verbose):
         """Loads the experiment named ``experiment_name``.
 
         Loads the experiment and its dependencies, that is, its ``skeltorch.Configuration`` and ``skeltorch.Data``
-        objects. It also initializes the loggers and restores the seed established during the creation of the
-        experiment.
+        objects. It also initializes the loggers.
 
         Args:
             data_path (str): ``--data-path`` command argument.
             num_workers (int): ``--num-workers`` command argument.
-            verbose (bool): ``--verbose`` command argument.
         """
+        self._init_loggers(verbose)
         self.configuration.load(self.paths['configuration'])
-        self.data.init(self, self.logger)
         self.data.load(data_path, self.paths['data'], num_workers)
-        self.logger.addHandler(logging.FileHandler(self.paths['log']))
-        self.logger.propagate = verbose
-        self.tbx = tensorboardX.SummaryWriter(self.paths['tensorboard'], flush_secs=10)
-        random.seed(self.configuration.get('_others', 'seed'))
-        np.random.seed(self.configuration.get('_others', 'seed'))
-        torch.manual_seed(self.configuration.get('_others', 'seed'))
-        torch.cuda.manual_seed_all(self.configuration.get('_others', 'seed'))
-        self.logger.info('Experiment {} loaded successfully.'.format(self.experiment_name))
+        self.logger.info('Experiment "{}" loaded successfully.'.format(self.experiment_name))
 
-    def create(self, data_path, config_path, config_schema_path, seed):
+    def create(self, data_path, config_path, config_schema_path, verbose):
         """Creates an experiment named ``experiment_name``.
 
         Creates the experiment and its associated files and folders. It also creates and saves its dependencies, that
@@ -94,20 +90,18 @@ class Experiment:
             data_path (str): ``--data-path`` command argument.
             config_path (str): ``--config-path`` command argument.
             config_schema_path (str): ``--config-schema-path`` command argument.
-            seed (int): ``--seed`` command argument.
         """
-        self.configuration.create(config_path, config_schema_path)
-        self.configuration.set('_others', 'seed', seed)
-        self.data.init(self, self.logger)
-        self.data.create(data_path)
         os.makedirs(self.paths['experiment'])
         os.makedirs(self.paths['checkpoints'])
         os.makedirs(self.paths['tensorboard'])
         os.makedirs(self.paths['results'])
         open(self.paths['log'], 'a').close()
+        self._init_loggers(verbose)
+        self.configuration.create(config_path, config_schema_path)
         self.configuration.save(self.paths['configuration'])
+        self.data.create(data_path)
         self.data.save(self.paths['data'])
-        self.logger.info('Experiment {} created successfully.'.format(self.experiment_name))
+        self.logger.info('Experiment "{}" created successfully.'.format(self.experiment_name))
 
     def checkpoints_get(self):
         """Returns a list with available checkpoints.
@@ -148,3 +142,35 @@ class Experiment:
                 checkpoint_file:
             torch.save(checkpoint_data, checkpoint_file)
             self.logger.info('Checkpoint of epoch {} saved.'.format(epoch))
+
+    def run_tensorboard(self, port, dev, compare, experiments_path):
+        """Runs TensorBoard using experiment files.
+
+        Args:
+            port (int): ``--port`` command argument.
+            dev (bool): ``--dev`` command argument.
+            compare (bool): ``--compare`` command argument.
+        """
+        tensorboard_dir = self.paths['tensorboard'] if not compare else experiments_path
+        if dev:
+            os.system(
+                'tensorboard dev upload --logdir {} --name "{}"'.format(tensorboard_dir, self.experiment_name)
+            )
+        else:
+            os.system('tensorboard --port {} --logdir {}'.format(port, tensorboard_dir))
+
+    def info(self):
+        self.logger.info('Information about experiment "{}"'.format(self.experiment_name))
+        self.logger.info('=' * len('Information about experiment "{}"'.format(self.experiment_name)))
+        self.logger.info('Configuration:')
+        for config_cat, config_cat_data in sorted(self.configuration.__dict__.items()):
+            if type(config_cat_data) != dict:
+                continue
+            self.logger.info('\t{}'.format(config_cat))
+            for config_param, config_val in config_cat_data.items():
+                self.logger.info('\t\t{}: {}'.format(config_param, config_val))
+        if len(self.checkpoints_get()) > 0:
+            self.logger.info('Available checkpoints:')
+            self.logger.info('\t' + ', '.join([str(c) for c in self.checkpoints_get()]))
+        else:
+            self.logger.info('No checkpoints available')

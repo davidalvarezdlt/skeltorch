@@ -43,6 +43,16 @@ python -m <your_module_name> <global_args> init <init_args>
 - ``--config-schema-path <config_schema_path>``: path to the schema file used to validate the configuration file.
 - ``--seed <seed>``: seed to be used in the experiment. Default: ``0``.
 
+## Info
+The ``info`` pipeline returns information associated with the experiment. Specifically, it prints the configuration
+parameters associated with the experiment and the available checkpoints, if any. The data is displayed using the 
+``logging.Logger`` object of the execution, so make sure to set the global argument ``--verbose`` if you want to see the
+information using standard output.
+
+```
+python -m <your_module_name> <global_args> info
+```
+
 ## Train
 The ``train`` pipeline is an implementation of the standard training procedure, where a `torch.utils.data.DataLoader` is 
 used to obtain the data of each iteration until no more data is available. At that point, the epoch counter is increased
@@ -72,7 +82,8 @@ python -m <your_module_name> <global_args> train <train_args>
 - ``--max-epochs <max_epochs>``: maximum number of epochs to run. Default: ``999``.
 - ``--log-period <log_period>``: number of iterations to wait between iteration logging. Default: ``100``.
 - ``--num-workers <num_workers>``: number of workers to use in ``torch.utils.data.DataLoader`` objects. Default: ``1``.
-- ``--device <device>``: PyTorch-friendly name of the device where the process should be executed. Default: ``cpu``.
+- ``--devices <devices>``: PyTorch-friendly names of the devices where the process should be executed. Default: ``cuda`` 
+if available, if not ``cpu``.
 
 ## Test
 The ``test`` pipeline is an open pipeline devised to test a checkpoint of your experiment. No default behavior is 
@@ -90,4 +101,20 @@ python -m <your_module_name> <global_args> test <test_args>
 
 - ``--epoch <epoch>``: epoch from which the training should be restored. **Required**.
 - ``--num-workers <num_workers>``: number of workers to use in the ``torch.utils.data.DataLoader`` objects. Default: ``1``.
-- ``--device <device>``: PyTorch-friendly name of the device where the process should be executed. Default: ``cpu``.
+- ``--devices <devices>``: PyTorch-friendly names of the devices where the process should be executed. Default: ``cuda`` 
+if available, if not ``cpu``.
+
+## TensorBoard
+The ``tensorboard`` pipeline is a command wrapper to execute TensorBoard using the files generated for your experiment.
+You can decide between running it in your local machine or using [TensorBoard.dev](https://tensorboard.dev), which is
+executed on the cloud and allows for easy sharing of training development.
+
+```
+python -m <your_module_name> <global_args> tensorboard <tensorboard_args>
+```
+
+**Tensorboard Arguments**
+
+- ``--port <port>``: port number where TensorBoard should be executed, if run locally. Default: ``6006``.
+- ``--dev``: run using [TensorBoard.dev](https://tensorboard.dev).
+- ``--compare``: run Tensorboard over all existing experiments.

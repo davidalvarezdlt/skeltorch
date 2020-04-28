@@ -87,7 +87,7 @@ class Skeltorch:
         tensorboard_subparser.add_argument('--compare', action='store_true', help='Run TensorBoard on all experiments')
 
     def _init_default_commands(self):
-        init_args = ['data_path', 'config_path', 'config_schema_path', 'verbose']
+        init_args = ['data_path', 'config_path', 'config_schema_path', 'seed', 'verbose']
         train_args = ['epoch', 'max_epochs', 'log_period', 'device']
         test_args = ['epoch', 'device']
         tensorboard_args = ['port', 'dev', 'compare', 'experiments_path']

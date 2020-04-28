@@ -15,6 +15,7 @@ class Configuration:
     Attributes:
         logger (logging.Logger): Logger object.
     """
+    seed = None
     logger = None
 
     def __init__(self, logger):

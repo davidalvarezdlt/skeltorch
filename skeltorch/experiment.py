@@ -1,5 +1,7 @@
 import logging
+import numpy as np
 import os
+import random
 import re
 import torch
 import tensorboardX
@@ -65,6 +67,13 @@ class Experiment:
         self.logger.propagate = verbose
         self.tbx = tensorboardX.SummaryWriter(self.paths['tensorboard'], flush_secs=10)
 
+    def _init_seed(self, seed):
+        seed = 0 if seed is None else seed  # Compatibility purposes
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
     def load(self, data_path, num_workers, verbose):
         """Loads the experiment named ``experiment_name``.
 
@@ -77,10 +86,11 @@ class Experiment:
         """
         self._init_loggers(verbose)
         self.configuration.load(self.paths['configuration'])
+        self._init_seed(self.configuration.seed)
         self.data.load(data_path, self.paths['data'], num_workers)
         self.logger.info('Experiment "{}" loaded successfully.'.format(self.experiment_name))
 
-    def create(self, data_path, config_path, config_schema_path, verbose):
+    def create(self, data_path, config_path, config_schema_path, seed, verbose):
         """Creates an experiment named ``experiment_name``.
 
         Creates the experiment and its associated files and folders. It also creates and saves its dependencies, that
@@ -97,7 +107,9 @@ class Experiment:
         os.makedirs(self.paths['results'])
         open(self.paths['log'], 'a').close()
         self._init_loggers(verbose)
+        self._init_seed(seed)
         self.configuration.create(config_path, config_schema_path)
+        self.configuration.seed = seed
         self.configuration.save(self.paths['configuration'])
         self.data.create(data_path)
         self.data.save(self.paths['data'])

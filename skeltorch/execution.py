@@ -1,7 +1,6 @@
 import numpy as np
 import os
 import torch
-import random
 import re
 
 
@@ -38,7 +37,6 @@ class Execution:
         self.args = vars(args)
         self.args.pop('command')
         self._load_default_args()
-        self._load_seed()
         self._validate()
 
     def _load_default_args(self):
@@ -50,13 +48,6 @@ class Execution:
             self.args['device'] = ['cuda'] if torch.cuda.is_available() else ['cpu']
         elif 'device' in self.args:
             self.args['device'] = sorted(self.args['device'])
-
-    def _load_seed(self):
-        if 'seed' in self.args:
-            random.seed(self.args['seed'])
-            np.random.seed(self.args['seed'])
-            torch.manual_seed(self.args['seed'])
-            torch.cuda.manual_seed_all(self.args['seed'])
 
     def _validate(self):
         self._validate_main_args()

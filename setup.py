@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="skeltorch",
-    version="1.1.0b1",
+    version="1.1.0b2",
     author="David Álvarez de la Torre",
     author_email="davidalvarezdlt@gmail.com",
     description="Light-weight framework that helps researchers to prototype faster using PyTorch.",

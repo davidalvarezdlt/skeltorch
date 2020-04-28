@@ -12,21 +12,15 @@ venv/
 ENV/
 
 # Distribution files
+build/
 dist/
+skeltorch.egg-info/
 
 # Pycharm Project
 .idea/
 
 # Docs Build
 docs/_build
-
-# Data Folder
-data/*
-!data/.gitkeep
-
-# Experiments Folder
-experiments/*
-!experiments/.gitkeep
 
 # Configuration File
 config.json

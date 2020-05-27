@@ -22,7 +22,7 @@ Please, cite the paper if its content is relevant for your research:
 You can check and download the files exposed in this tutorial from our 
 [official GitHub repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/glow). You can also 
 download a sample experiment using default hyper-parameters from 
-[this link](https://storage.cloud.google.com/skeltorch/skeltorch_glow_example.zip). Notice that **this sample experiment
+[this link](https://www.dropbox.com/s/whdvpd4gk4ws0el/glow_example.zip?dl=0). Notice that **this sample experiment
 is not optimized and consequently it is not intended to be used for comparative results in your paper**.
 
 ## 1. File structure

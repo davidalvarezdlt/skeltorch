@@ -1,12 +1,12 @@
 # Glow
-In this example, we will implement an unconditional version of 
-[Glow: Generative Flow with Invertible 1x1 Convolutions](https://arxiv.org/abs/1807.03039). Glow is a normalizing flow, 
-capable of learning a generative model without any supervision. We will use CIFAR10 to train the network, a data 
-set containing 60.000 images from 10 different classes. At the end of this example, you will be able to generate 
+In this example, we will implement an unconditional version of
+[Glow: Generative Flow with Invertible 1x1 Convolutions](https://arxiv.org/abs/1807.03039). Glow is a normalizing flow,
+capable of learning a generative model without any supervision. We will use CIFAR10 to train the network, a data
+set containing 60.000 images from 10 different classes. At the end of this example, you will be able to generate
 artificial images by randomly sampling from a Gaussian.
 
-A (slightly) modified version of this implementation has been used in the paper [Input Complexity and 
-Out-of-distribution Detection with Likelihood-based Generative Models](https://openreview.net/forum?id=SyxIWpVYvr). 
+A (slightly) modified version of this implementation has been used in the paper [Input Complexity and
+Out-of-distribution Detection with Likelihood-based Generative Models](https://openreview.net/forum?id=SyxIWpVYvr).
 Please, cite the paper if its content is relevant for your research:
 
 ```
@@ -19,9 +19,9 @@ Please, cite the paper if its content is relevant for your research:
 }
 ```
 
-You can check and download the files exposed in this tutorial from our 
-[official GitHub repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/glow). You can also 
-download a sample experiment using default hyper-parameters from 
+You can check and download the files exposed in this tutorial from our
+[official GitHub repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/glow). You can also
+download a sample experiment using default hyper-parameters from
 [this link](https://www.dropbox.com/s/whdvpd4gk4ws0el/glow_example.zip?dl=0). Notice that **this sample experiment
 is not optimized and consequently it is not intended to be used for comparative results in your paper**.
 
@@ -40,13 +40,13 @@ glow/
     runner.py
 config.default.json
 config.schema.json
-README.md  
+README.md
 requirements.txt
-``` 
+```
 
 ## 2. Configuration file
-Glow has quite a few hyper-parameters that can be tuned during training. To provide a flexible environment, we will set 
-them using the configuration file inside the ``model`` configuration group. Inside our ``config.default.json`` 
+Glow has quite a few hyper-parameters that can be tuned during training. To provide a flexible environment, we will set
+them using the configuration file inside the ``model`` configuration group. Inside our ``config.default.json``
 file:
 
 ```
@@ -78,7 +78,7 @@ Extra: in order to validate it, we create an auxiliary file named ``config.schem
 repository if you are interested in creating them for your own projects.
 
 ## 3. Data class
-We will start implementing our own ``skeltorch.Data`` class, which is used to handle all data-related tasks. In this 
+We will start implementing our own ``skeltorch.Data`` class, which is used to handle all data-related tasks. In this
 example, this class will be extremely simple and will only consist of loading the data sets required to train the model.
 
 ```
@@ -91,7 +91,7 @@ class GlowData(skeltorch.Data):
 ```
 
 We will only create two splits: one for training and another for validation. As CIFAR10 comes with a default division of
-training and testing data, we will use this last one as the validation split. Consequently, no actions are required 
+training and testing data, we will use this last one as the validation split. Consequently, no actions are required
 during the creation of an experiment:
 
 ```
@@ -100,7 +100,7 @@ def create(self, data_path):
 ```
 
 We will use the default ``torch.utils.data.Dataset`` implementation of ``torchvision``. By default, this implementation
-returns ``PIL.Image`` objects instead of ``torch.Tensor``. We will load a composition of required transformations (only 
+returns ``PIL.Image`` objects instead of ``torch.Tensor``. We will load a composition of required transformations (only
 one in this example, but could be more) inside ``self.transforms``:
 
 ```
@@ -155,8 +155,8 @@ class GlowRunner(skeltorch.Runner):
     scheduler = None
 ```
 
-Notice that the ``torch.nn.Module`` object associated with the model is stored inside ``glow/model.py``. Check the 
-example files to get a detailed implementation of it. We will start creating a new instance of both the model and the 
+Notice that the ``torch.nn.Module`` object associated with the model is stored inside ``glow/model.py``. Check the
+example files to get a detailed implementation of it. We will start creating a new instance of both the model and the
 optimizer using Skeltorch default methods:
 
 ```
@@ -179,7 +179,7 @@ def init_optimizer(self, device):
     )
 ```
 
-In both cases, the hyper-parameters are being extracted from the ``skeltorch.Configuration`` object of the experiment 
+In both cases, the hyper-parameters are being extracted from the ``skeltorch.Configuration`` object of the experiment
 (``self.experiment``). We will also initialize a learning rate scheduler using ``init_others()``:
 
 ```
@@ -190,7 +190,7 @@ def init_others(self, device):
     )
 ```
 
-As the scheduler has a state, we have to save and load it. Skeltorch comes with two default methods for this task: 
+As the scheduler has a state, we have to save and load it. Skeltorch comes with two default methods for this task:
 ``load_states_others()`` and ``save_states_others()``:
 
 ```
@@ -201,9 +201,9 @@ def save_states_others(self):
     return {'scheduler': self.scheduler.state_dict()}
 ```
 
-Finally, as the learning rate will be reduced dynamically, we would like to have a graphical representation of it. We 
+Finally, as the learning rate will be reduced dynamically, we would like to have a graphical representation of it. We
 can create a new Tensorboard plot for this purpose. We will extend the method ``train_before_epoch_tasks()``, which is a
-hook that runs at the beginning of every epoch. We will keep default behavior by calling 
+hook that runs at the beginning of every epoch. We will keep default behavior by calling
 ``super().train_before_epoch_tasks()`` before appending our own functionalities:
 
 ```
@@ -212,8 +212,8 @@ def train_before_epoch_tasks(self, device):
     self.experiment.tbx.add_scalar('lr', self.optimizer.param_groups[0]['lr'], self.counters['epoch'])
 ```
 
-We are ready to implement the main method of the training pipeline: the ``step_train()`` method. This method receives 
-the data associated with one iteration of the loaders (both training and validation splits) and returns the loss. 
+We are ready to implement the main method of the training pipeline: the ``step_train()`` method. This method receives
+the data associated with one iteration of the loaders (both training and validation splits) and returns the loss.
 Skeltorch uses that loss to back-propagate the model and updates its parameters:
 
 ```
@@ -224,12 +224,12 @@ def train_step(self, it_data, device):
     return GlowRunner.compute_loss(z, log_det, self.experiment.configuration.get('data', 'pixel_depth'))
 ```
 
-The first step is to move the data to the correct device, stored in ``device``. Notice that while ``it_data`` is a tuple 
-containing both the images and the labels, we are only using the images for our project. After adding noise to the 
-images (to simulate a continuous input), we compute the loss using the static method ``GlowRunner.compute_loss()``. 
+The first step is to move the data to the correct device, stored in ``device``. Notice that while ``it_data`` is a tuple
+containing both the images and the labels, we are only using the images for our project. After adding noise to the
+images (to simulate a continuous input), we compute the loss using the static method ``GlowRunner.compute_loss()``.
 Check the runner file (``glow/runner.py``) for a detailed implementation of it.
 
-Finally, we will update the scheduler and call the test pipeline at the end of every epoch by extending the 
+Finally, we will update the scheduler and call the test pipeline at the end of every epoch by extending the
 ``train_after_epoch_tasks()`` hook. Check the next section for detailed explanation of the behavior of this pipeline:
 
 ```
@@ -239,7 +239,7 @@ def train_after_epoch_tasks(self, device):
     self.test(None, device)
 ```
 
-To avoid unnecessary computation, we will stop the training if the validation loss has not improved for a certain amount 
+To avoid unnecessary computation, we will stop the training if the validation loss has not improved for a certain amount
 of epochs (parameter given in the configuration file). We can easily do that with the ``train_early_stopping()``, which
 must return a ``bool`` representing whether the training should be stopped or not:
 
@@ -278,18 +278,18 @@ def test(self, epoch, device):
     self.logger.info('Random samples stored in TensorBoard')
 ```
 
-Notice that the first step of every pipeline is to load object states. In this example, we will assume that they are 
+Notice that the first step of every pipeline is to load object states. In this example, we will assume that they are
 already loaded if ``epoch=None``.
 
-We generate a batch of 5 random Gaussian vectors of size ``img_height * img_width * channels`` = ``img_size^2 * 3``, 
-where we assume squared color images. Finally, the ``reverse()`` method of the model is called to obtain their 
+We generate a batch of 5 random Gaussian vectors of size ``img_height * img_width * channels`` = ``img_size^2 * 3``,
+where we assume squared color images. Finally, the ``reverse()`` method of the model is called to obtain their
 associated images.
 
-We will save the generated images inside TensorBoard using the ``SummaryWriter`` object stored inside 
+We will save the generated images inside TensorBoard using the ``SummaryWriter`` object stored inside
 ``self.experiment.tbx``.
 
 ## 5. Initializing Skeltorch
-The last step is to use our custom ``GlowData`` and ``GlowRunner`` classes to create a Skeltorch project. Inside our 
+The last step is to use our custom ``GlowData`` and ``GlowRunner`` classes to create a Skeltorch project. Inside our
 ``glow/__main__.py`` file:
 
 ```
@@ -318,14 +318,14 @@ The next step is to train the model. Do not forget to include ``--device cuda`` 
 python -m glow --experiment-name glow_example train
 ```
 
-We already have our model trained. We have already performed the test of every epoch by calling it inside 
+We already have our model trained. We have already performed the test of every epoch by calling it inside
 ``train_after_epoch_tasks()``. In any case, we could run it again by calling:
 
 ```
 python -m glow --experiment-name glow_example test --epoch 22
 ```
 
-Where ``--epoch`` may receive any epoch from which the checkpoint exists. 
+Where ``--epoch`` may receive any epoch from which the checkpoint exists.
 
 ## 7. Visualizing the results
 Skeltorch comes with two ways of visualizing results. The simplest one is the ``verbose.log`` file stored inside every

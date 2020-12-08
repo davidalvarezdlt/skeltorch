@@ -1,6 +1,6 @@
 # Dealing with configuration files
-When creating a new experiment using the ``init`` pipeline, you are forced to pass a valid JSON file representing the 
-configuration to be used in that specific experiment. Configuration parameters are immutable, that is, can not be 
+When creating a new experiment using the ``init`` pipeline, you are forced to pass a valid JSON file representing the
+configuration to be used in that specific experiment. Configuration parameters are immutable, that is, can not be
 changed.
 
 Configuration parameters **must** be placed inside JSON objects. The name of this object will represent the category of
@@ -21,7 +21,7 @@ In order to create a configuration file, create a ``.json`` file containing vali
 }
 ```
 
-In this example, we have two configuration categories: ``data`` and ``training``. The first category only contains one 
+In this example, we have two configuration categories: ``data`` and ``training``. The first category only contains one
 configuration parameter, while the second contains two. Given an instance of a ``skeltorch.Configuration`` object,
 you could access the parameter ``lr`` of the ``training`` category as:
 

@@ -18,11 +18,15 @@ class GlowModelCouplingNetwork(torch.nn.Module):
         self.kernel_size = kernel_size
         self.scale_out = scale_out
         self.coupling_network_layers = torch.nn.Sequential(
-            torch.nn.Conv2d(n_in, num_filters, kernel_size, padding=kernel_size // 2),
+            torch.nn.Conv2d(
+                n_in, num_filters, kernel_size, padding=kernel_size // 2
+            ),
             torch.nn.ReLU(inplace=True),
             torch.nn.Conv2d(num_filters, num_filters, 1),
             torch.nn.ReLU(inplace=True),
-            torch.nn.Conv2d(num_filters, n_out, kernel_size, padding=kernel_size // 2),
+            torch.nn.Conv2d(
+                num_filters, n_out, kernel_size, padding=kernel_size // 2
+            ),
         )
         self.scale = torch.nn.Parameter(torch.zeros(1, n_out, 1, 1))
 
@@ -44,11 +48,13 @@ class GlowModelCoupling(torch.nn.Module):
         self.kernel_size = kernel_size
         if self.coupling_type == 'affine':
             self.coupling_network = GlowModelCouplingNetwork(
-                self.num_channels // 2, self.num_channels, self.num_filters, self.kernel_size
+                self.num_channels // 2, self.num_channels, self.num_filters,
+                self.kernel_size
             )
         elif self.coupling_type == 'additive':
             self.coupling_network = GlowModelCouplingNetwork(
-                self.num_channels // 2, self.num_channels // 2, self.num_filters, self.kernel_size
+                self.num_channels // 2, self.num_channels // 2,
+                self.num_filters, self.kernel_size
             )
 
     def forward(self, h):
@@ -57,9 +63,13 @@ class GlowModelCoupling(torch.nn.Module):
         if self.coupling_type == 'affine':
             s, t = torch.chunk(aux, 2, dim=1)
             s = torch.sigmoid(s + 2)
-            return torch.cat([h1, s * (h2 + t)], dim=1), s.log().view(h.size(0), -1).sum(1)
+            return torch.cat(
+                [h1, s * (h2 + t)], dim=1
+            ), s.log().view(h.size(0), -1).sum(1)
         elif self.coupling_type == 'additive':
-            return torch.cat([h1, h2 + aux], dim=1), torch.zeros(h.size(0)).to(h.device)
+            return torch.cat(
+                [h1, h2 + aux], dim=1
+            ), torch.zeros(h.size(0)).to(h.device)
 
     def reverse(self, h):
         h1, h2 = torch.chunk(h, 2, dim=1)
@@ -104,7 +114,9 @@ class GlowModelMixer(torch.nn.Module):
         self.register_buffer('l_eye', torch.eye(l_mask.shape[0]))
         self.register_buffer('s_sign', torch.sign(torch.from_numpy(w_s)))
         self.w_l = torch.nn.Parameter(torch.from_numpy(w_l))
-        self.log_w_s = torch.nn.Parameter(torch.log(1e-7 + torch.abs(torch.from_numpy(w_s))))
+        self.log_w_s = torch.nn.Parameter(
+            torch.log(1e-7 + torch.abs(torch.from_numpy(w_s)))
+        )
         self.w_u = torch.nn.Parameter(torch.from_numpy(w_u))
 
     def _init_mixer_shuffle(self):
@@ -112,27 +124,33 @@ class GlowModelMixer(torch.nn.Module):
         self.register_buffer('indices_reversed', torch.argsort(self.indices))
 
     def _init_mixer_reversed(self):
-        self.register_buffer('indices', torch.arange(self.num_channels - 1, -1, -1))
-        self.register_buffer('indices_reversed', torch.arange(self.num_channels - 1, -1, -1))
+        self.register_buffer(
+            'indices', torch.arange(self.num_channels - 1, -1, -1)
+        )
+        self.register_buffer(
+            'indices_reversed', torch.arange(self.num_channels - 1, -1, -1)
+        )
 
     def calc_conv_weight(self):
-        weight = (
-                self.w_p
-                @ (self.w_l * self.l_mask + self.l_eye)
-                @ (self.w_u * self.u_mask + torch.diag(self.s_sign * torch.exp(self.log_w_s)))
-        )
+        weight = (self.w_p
+                  @ (self.w_l * self.l_mask + self.l_eye)
+                  @ (self.w_u * self.u_mask + torch.diag(
+                    self.s_sign * torch.exp(self.log_w_s)))
+                  )
         return weight
 
     def forward(self, h):
         if self.permutation_type == 'conv':
             weight = self.calc_conv_weight().unsqueeze(2).unsqueeze(3)
-            return torch.nn.functional.conv2d(h, weight), self.log_w_s.sum() * h.size(2) * h.size(3)
+            return torch.nn.functional.conv2d(h, weight), \
+                self.log_w_s.sum() * h.size(2) * h.size(3)
         else:
             return h[:, self.indices], 0
 
     def reverse(self, h):
         if self.permutation_type == 'conv':
-            invweight = self.calc_conv_weight().inverse().unsqueeze(2).unsqueeze(3)
+            invweight = self.calc_conv_weight().inverse().unsqueeze(2) \
+                .unsqueeze(3)
             return torch.nn.functional.conv2d(h, invweight)
         else:
             return h[:, self.indices_reversed]
@@ -145,19 +163,23 @@ class GlowModelActNorm(torch.nn.Module):
         super(GlowModelActNorm, self).__init__()
         self.num_channels = num_channels
         self.t = torch.nn.Parameter(torch.zeros(1, self.num_channels, 1, 1))
-        self.logs = torch.nn.Parameter(torch.zeros(1, self.num_channels, 1, 1))
+        self.logs = torch.nn.Parameter(
+            torch.zeros(1, self.num_channels, 1, 1)
+        )
         self.register_buffer('initialized', torch.tensor(0).bool())
 
     def _init_act_norm(self, h):
         flatten = h.permute(1, 0, 2, 3).contiguous().view(h.size(1), -1).data
         self.t.data = -flatten.mean(1).view(1, -1, 1, 1)
-        self.logs.data = torch.log(1 / (flatten.std(1) + 1e-7)).view(1, -1, 1, 1)
+        self.logs.data = torch.log(1 / (flatten.std(1) + 1e-7)) \
+            .view(1, -1, 1, 1)
         self.initialized = torch.tensor(1).bool()
 
     def forward(self, h):
         if not self.initialized.all():
             self._init_act_norm(h)
-        return torch.exp(self.logs) * (h + self.t), self.logs.sum() * h.size(2) * h.size(3)
+        return torch.exp(self.logs) * (h + self.t), \
+            self.logs.sum() * h.size(2) * h.size(3)
 
     def reverse(self, h):
         return h * torch.exp(-self.logs) - self.t
@@ -165,11 +187,14 @@ class GlowModelActNorm(torch.nn.Module):
 
 class GlowModelFlow(torch.nn.Module):
 
-    def __init__(self, num_channels, permutation_type, coupling_type, num_filters, kernel_size):
+    def __init__(self, num_channels, permutation_type, coupling_type,
+                 num_filters, kernel_size):
         super(GlowModelFlow, self).__init__()
         self.flow_act_norm = GlowModelActNorm(num_channels)
         self.flow_mixer = GlowModelMixer(num_channels, permutation_type)
-        self.flow_coupling = GlowModelCoupling(num_channels, coupling_type, num_filters, kernel_size)
+        self.flow_coupling = GlowModelCoupling(
+            num_channels, coupling_type, num_filters, kernel_size
+        )
 
     def forward(self, h):
         h, log_det_act_norm = self.flow_act_norm.forward(h)
@@ -192,32 +217,56 @@ class GlowModelSqueezer(torch.nn.Module):
 
     def forward(self, h):
         batch_size, num_channels, height, width = h.size()
-        h = h.view(batch_size, num_channels, height // self.squeezing_factor, self.squeezing_factor,
-                   width // self.squeezing_factor, self.squeezing_factor)
-        h = h.permute(0, 1, 3, 5, 2, 4).contiguous()
-        return h.view(batch_size, num_channels * (self.squeezing_factor ** 2), height // self.squeezing_factor,
-                      width // self.squeezing_factor)
+        h = h.view(
+            batch_size,
+            num_channels,
+            height // self.squeezing_factor,
+            self.squeezing_factor,
+            width // self.squeezing_factor,
+            self.squeezing_factor
+        )
+        return h.permute(0, 1, 3, 5, 2, 4).contiguous().view(
+            batch_size,
+            num_channels * (self.squeezing_factor ** 2),
+            height // self.squeezing_factor,
+            width // self.squeezing_factor
+        )
 
     def reverse(self, h):
         batch_size, num_channels, height, width = h.size()
-        h = h.view(batch_size, num_channels // (self.squeezing_factor ** 2), self.squeezing_factor,
-                   self.squeezing_factor, height, width)
-        h = h.permute(0, 1, 4, 2, 5, 3).contiguous()
-        return h.view(batch_size, num_channels // (self.squeezing_factor ** 2), height * self.squeezing_factor,
-                      width * self.squeezing_factor)
+        h = h.view(
+            batch_size,
+            num_channels // (self.squeezing_factor ** 2),
+            self.squeezing_factor,
+            self.squeezing_factor,
+            height,
+            width
+        ).permute(0, 1, 4, 2, 5, 3).contiguous()
+        return h.view(
+            batch_size,
+            num_channels // (self.squeezing_factor ** 2),
+            height * self.squeezing_factor,
+            width * self.squeezing_factor
+        )
 
 
 class GlowModelBlock(torch.nn.Module):
 
-    def __init__(self, num_channels, num_flows, squeezing_factor, permutation_type, coupling_type, num_filters,
-                 kernel_size):
+    def __init__(self, num_channels, num_flows, squeezing_factor,
+                 permutation_type, coupling_type, num_filters, kernel_size):
         super(GlowModelBlock, self).__init__()
         self.block_squeezer = GlowModelSqueezer(squeezing_factor)
         self.block_flows = torch.nn.ModuleList()
         num_channels *= squeezing_factor ** 2
         for _ in range(num_flows):
             self.block_flows.append(
-                GlowModelFlow(num_channels, permutation_type, coupling_type, num_filters, kernel_size)
+                GlowModelFlow(
+                    num_channels,
+                    permutation_type,
+                    coupling_type,
+                    num_filters,
+                    kernel_size
+                )
             )
 
     def forward(self, h):
@@ -239,8 +288,8 @@ class GlowModelBlock(torch.nn.Module):
 class GlowModel(torch.nn.Module):
     num_channels = None
 
-    def __init__(self, num_channels, num_blocks, num_flows, squeezing_factor, permutation_type, coupling_type,
-                 num_filters, kernel_size):
+    def __init__(self, num_channels, num_blocks, num_flows, squeezing_factor,
+                 permutation_type, coupling_type, num_filters, kernel_size):
         super(GlowModel, self).__init__()
         self.num_channels = num_channels
         self.squeezing_factor = squeezing_factor
@@ -248,7 +297,13 @@ class GlowModel(torch.nn.Module):
         for _ in range(num_blocks):
             self.glow_blocks.append(
                 GlowModelBlock(
-                    num_channels, num_flows, squeezing_factor, permutation_type, coupling_type, num_filters, kernel_size
+                    num_channels,
+                    num_flows,
+                    squeezing_factor,
+                    permutation_type,
+                    coupling_type,
+                    num_filters,
+                    kernel_size
                 )
             )
             num_channels *= squeezing_factor ** 2
@@ -283,9 +338,13 @@ class GlowModel(torch.nn.Module):
             block_channels = block_channels // 2
             block_im_size = block_im_size // 2
             block_size = block_channels * block_im_size ** 2
-            z_list.append(z[:, block_index_start:block_index_start + block_size]
-                          .view(z.size(0), block_channels, block_im_size, block_im_size))
+            z_list.append(
+                z[:, block_index_start:block_index_start + block_size]
+                .view(z.size(0), block_channels, block_im_size, block_im_size)
+            )
             block_index_start += block_size
-        z_list.append(z[:, block_index_start:block_index_start + block_size]
-                      .view(z.size(0), block_channels, block_im_size, block_im_size))
+        z_list.append(
+            z[:, block_index_start:block_index_start + block_size]
+            .view(z.size(0), block_channels, block_im_size, block_im_size)
+        )
         return z_list

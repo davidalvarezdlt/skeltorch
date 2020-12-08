@@ -36,8 +36,7 @@ class MNISTClassifierRunner(skeltorch.Runner):
         self.test(None, device)
 
     def test(self, epoch, device):
-        # Check if test has a forced epoch to load objects and restore checkpoint
-        if epoch is not None and epoch not in self.experiment.checkpoints_get():
+        if epoch and epoch not in self.experiment.checkpoints_get():
             raise ValueError('Epoch {} not found.'.format(epoch))
         elif epoch is not None:
             self.init_model(device)
@@ -45,7 +44,9 @@ class MNISTClassifierRunner(skeltorch.Runner):
             self.load_states(epoch, device)
 
         # Log the start of the test
-        self.logger.info('Starting the test of epoch {}...'.format(self.counters['epoch']))
+        self.logger.info('Starting the test of epoch {}...'.format(
+            self.counters['epoch'])
+        )
 
         # Create a variable to store correct predictions
         n_correct = 0
@@ -60,15 +61,23 @@ class MNISTClassifierRunner(skeltorch.Runner):
                 it_data_prediction = self.model(it_data_input)
 
             # Increase the number of correct predictions
-            it_data_prediction_labels = it_data_prediction.argmax(dim=1, keepdim=True)
-            n_correct += it_data_prediction_labels.eq(it_data_target.view_as(it_data_prediction_labels)).sum().item()
+            it_data_prediction_labels = it_data_prediction.argmax(
+                dim=1, keepdim=True
+            )
+            n_correct += it_data_prediction_labels.eq(
+                it_data_target.view_as(it_data_prediction_labels)
+            ).sum().item()
 
         # Compute accuracy dividing by the entire dataset
         test_acc = n_correct / len(self.experiment.data.loaders['test'])
 
         # Log accuracy using textual logger and TensorBoard
-        self.logger.info('Test of epoch {} | Accuracy: {:.2f}%'.format(self.counters['epoch'], test_acc))
-        self.experiment.tbx.add_scalar('accuracy/epoch/test', test_acc, self.counters['epoch'])
+        self.logger.info('Test of epoch {} | Accuracy: {:.2f}%'.format(
+            self.counters['epoch'], test_acc)
+        )
+        self.experiment.tbx.add_scalar(
+            'accuracy/epoch/test', test_acc, self.counters['epoch']
+        )
         self.experiment.tbx.flush()
 
     def load_states_others(self, checkpoint_data):

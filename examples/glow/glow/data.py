@@ -22,15 +22,21 @@ class GlowData(skeltorch.Data):
         self.loaders['train'] = torch.utils.data.DataLoader(
             dataset=self.datasets['train'],
             shuffle=True,
-            batch_size=self.experiment.configuration.get('training', 'batch_size'),
+            batch_size=self.experiment.configuration.get(
+                'training', 'batch_size'
+            ),
             num_workers=num_workers
         )
         self.loaders['validation'] = torch.utils.data.DataLoader(
             dataset=self.datasets['validation'],
             shuffle=True,
-            batch_size=self.experiment.configuration.get('training', 'batch_size'),
+            batch_size=self.experiment.configuration.get(
+                'training', 'batch_size'
+            ),
             num_workers=num_workers
         )
 
     def _load_transforms(self):
-        self.transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+        self.transforms = torchvision.transforms.Compose([
+            torchvision.transforms.ToTensor()
+        ])

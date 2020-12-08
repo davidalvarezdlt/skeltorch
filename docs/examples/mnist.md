@@ -2,16 +2,16 @@
 In this example we will implement a model capable of classifying images of digits. To do so, we will use the MNIST
 dataset, which contains a total of 60.000 images of numbers ranging from 0 to 9.
 
-The model used in this example is the same used in the 
-[example provided by PyTorch](https://github.com/pytorch/examples/tree/master/mnist). You can check and download the 
-files exposed in this tutorial from our 
+The model used in this example is the same used in the
+[example provided by PyTorch](https://github.com/pytorch/examples/tree/master/mnist). You can check and download the
+files exposed in this tutorial from our
 [official GitHub repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/mnist_classifier).
 
-You can also download a sample experiment of this project trained for ``--max-epochs 10`` from 
+You can also download a sample experiment of this project trained for ``--max-epochs 10`` from
 [this link](https://www.dropbox.com/s/8xz0ax1v01hxmiy/mnist_example.zip?dl=0).
 
 ## 1. File structure
-The first step is to create the files required to create a Skeltorch project. In this example, we will create not only 
+The first step is to create the files required to create a Skeltorch project. In this example, we will create not only
 mandatory files, but also a ``config.schema.json`` file to validate the configuration file:
 
 ```
@@ -25,12 +25,12 @@ mnist_classifier/
     runner.py
 config.default.json
 config.schema.json
-README.md  
+README.md
 requirements.txt
-``` 
+```
 
 ## 2. Configuration file
-The project is quite simple, and lucky us we will need only a few configuration parameters. Inside the 
+The project is quite simple, and lucky us we will need only a few configuration parameters. Inside the
 ``config.default.json`` file:
 
 ```
@@ -46,14 +46,14 @@ The project is quite simple, and lucky us we will need only a few configuration 
 }
 ```
 
-We could decide to also include configuration parameters related to the design of the model and intermediate layers. To 
+We could decide to also include configuration parameters related to the design of the model and intermediate layers. To
 keep things simple, we will assume that the model is already defined an immutable.
 
 Extra: in order to validate it, we create an auxiliary file named ``config.schema.json``. You can check it in our GitHub
 repository if you are interested in creating them for your own projects.
 
 ## 3. Data class
-The first class that we have to extend is ``skeltorch.Data``. This class serves as an interface between the file system 
+The first class that we have to extend is ``skeltorch.Data``. This class serves as an interface between the file system
 and the pipelines. We will start by creating our data class inside ``mnist_classifier/data.py``:
 
 ```
@@ -70,16 +70,16 @@ class MNISTClassifierData(skeltorch.Data):
     transforms = None
 ```
 
-We will start by implementing the method ``load_datasets()``. The function of this methods is to load 
-``torch.utils.data.Dataset`` objects in ``self.datasets``. This attribute is in fact a dictionary with keys identifying 
-each one of the three natural splits: ``train``, ``validation`` and ``test``. 
+We will start by implementing the method ``load_datasets()``. The function of this methods is to load
+``torch.utils.data.Dataset`` objects in ``self.datasets``. This attribute is in fact a dictionary with keys identifying
+each one of the three natural splits: ``train``, ``validation`` and ``test``.
 
-In our experiment we are going to use MNIST, which already has a ``torch.utils.data.Dataset`` implementation in 
-``torchvision``. By default, data items provided by this implementation are ``PIL.Image`` objects, which must be 
+In our experiment we are going to use MNIST, which already has a ``torch.utils.data.Dataset`` implementation in
+``torchvision``. By default, data items provided by this implementation are ``PIL.Image`` objects, which must be
 transformed to ``torch.Tensor`` objects. The parameter ``transform`` receives a set of transformations and applies them
 to every item.
 
-We create an auxiliary method ``_load_transforms()`` to load this set of transformations as a class attribute. To help 
+We create an auxiliary method ``_load_transforms()`` to load this set of transformations as a class attribute. To help
 the training, we will also normalize the data as done in the original implementation:
 
 ```
@@ -98,15 +98,15 @@ def load_datasets(self, data_path):
     self.datasets['test'] = torchvision.datasets.MNIST(data_path, train=False, transform=self.transforms, download=True)
 ```
 
-Notice that, by default, only training and testing splits are provided. We will use a portion (given in the 
+Notice that, by default, only training and testing splits are provided. We will use a portion (given in the
 configuration parameter ``val_split``) of the training data to create a validation split. We will perform this task in
-the method ``create()``. This method is only called during the creation of a new experiment and its purpose is to run 
+the method ``create()``. This method is only called during the creation of a new experiment and its purpose is to run
 tasks that should only be done once:
 
 ```
 def create(self, data_path):
     self.load_datasets(data_path)
-    
+
     # Create a list containing the indexes of the default MNIST Train split
     train_set_len = len(self.datasets['train'])
     train_set_indexes = list(range(train_set_len))
@@ -119,13 +119,13 @@ def create(self, data_path):
 ```
 
 We are finally ready to implement the final method: ``load_loaders()``. This method uses the previous ones to do exactly
-the same as ``load_datasets()`` but with  ``torch.utils.data.DataLoader`` objects. These loaders are then used in the 
+the same as ``load_datasets()`` but with  ``torch.utils.data.DataLoader`` objects. These loaders are then used in the
 pipelines to obtain the data of the iterations.
 
 As both the training and validation splits share the same ``torch.data.utils.Dataset`` object, we have to somehow force
-the loader to use the indexes created inside the ``create()`` method. The mechanism that PyTorch provides for this 
-purpose are samplers, which define a procedure to extract data from a dataset. Specifically, we will use the 
-``torch.utils.data.SubsetRandomSampler()`` class, which both limits the range of returned data and shuffles it on every 
+the loader to use the indexes created inside the ``create()`` method. The mechanism that PyTorch provides for this
+purpose are samplers, which define a procedure to extract data from a dataset. Specifically, we will use the
+``torch.utils.data.SubsetRandomSampler()`` class, which both limits the range of returned data and shuffles it on every
 epoch.
 
 For the case of the test split, as there already exists a unique ``torch.utils.data.Dataset`` object, we can simply set
@@ -154,7 +154,7 @@ def load_loaders(self, data_path, num_workers):
 ```
 
 ## 4. Runner class: train pipeline
-With our data class prepared, its time to define our pipelines. In this example, we will use default ``train`` and 
+With our data class prepared, its time to define our pipelines. In this example, we will use default ``train`` and
 ``test`` pipelines with some small extensions. We will use the model used in the PyTorch example and store it
 inside ``mnist_example/model.py`` file. For the pipelines, inside our ``mnist_example/runner.py`` file:
 
@@ -171,7 +171,7 @@ class MNISTClassifierRunner(skeltorch.Runner):
 ```
 
 We will start implementing two straightforward but necessary methods: ``init_model()`` and ``init_optimizer()``. These
-methods initialize both ``self.model`` and ``self.optimizer`` with the ``torch.nn.Module`` and ``torch.optim.Optimizer`` 
+methods initialize both ``self.model`` and ``self.optimizer`` with the ``torch.nn.Module`` and ``torch.optim.Optimizer``
 objects to be used in the project. Do not forget to send the objects to the device with the ``to()`` method:
 
 ```
@@ -185,7 +185,7 @@ def init_optimizer(self, device):
     )
 ```
 
-We also want to include a scheduler to control the learning rate. We will extend the ``init_others()`` method to 
+We also want to include a scheduler to control the learning rate. We will extend the ``init_others()`` method to
 initialize it:
 
 ```
@@ -197,7 +197,7 @@ def init_others(self, device):
     )
 ```
 
-The ``train`` pipeline is already defined. From our part, we only have to implement ``step_train()``, which receives 
+The ``train`` pipeline is already defined. From our part, we only have to implement ``step_train()``, which receives
 the data associated to one iteration and returns the loss after propagating through the model. The data returned by the
 loaders is always stored in the CPU, we should always use the ``to()`` method to move it to other devices that may have
 been required:
@@ -226,7 +226,7 @@ Negative log-likelihood and any other loss are usually good measures of how a mo
 we want is to improve the accuracy of our classifier. We will implement the ``test`` pipeline to measure it and log it
 using both the default logger and TensorBoard. Some details about the implementation:
 
-- We will implement the method in order to handle a possible argument ``epoch=None``. In that precise case, the method 
+- We will implement the method in order to handle a possible argument ``epoch=None``. In that precise case, the method
 assumes that no checkpoint should be restored. In any other case, it checks that it exists and loads it.
 - We use the loader stored inside ``self.experiment.data.loaders['test']``, which is the one we initialized in the data
 class.
@@ -297,14 +297,14 @@ The next step is to train the model. We will limit the number of epoch to ``--ma
 python -m mnist_classifier --experiment-name mnist_example train --max-epochs 10
 ```
 
-We already have our model trained. We have already performed the test of every epoch by calling it inside 
+We already have our model trained. We have already performed the test of every epoch by calling it inside
 ``train_after_epoch_tasks()``. In any case, we could run it again by calling:
 
 ```
 python -m mnist_classifier --experiment-name mnist_example test --epoch 10
 ```
 
-Where ``--epoch`` may receive any epoch from which the checkpoint exists. 
+Where ``--epoch`` may receive any epoch from which the checkpoint exists.
 
 ## 7. Visualizing the results
 Skeltorch comes with two ways of visualizing results. The simplest one is the ``verbose.log`` file stored inside every

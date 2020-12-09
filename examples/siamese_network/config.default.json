@@ -1,0 +1,32 @@
+{
+  "data": {
+    "dataset": "vctk",
+    "sf_original": 48000,
+    "sf_target": 16000,
+    "cut_length": 1,
+    "n_mfcc": 40,
+    "n_fft": 512,
+    "win_length": 400,
+    "hop_length": 160,
+    "val_split": 0.2,
+    "n_test_speakers": 20
+  },
+  "model": {
+    "n_components": 16,
+    "loss_margin": 2.0
+  },
+  "training": {
+    "batch_size": 32,
+    "lr": 0.0001,
+    "lr_scheduler_step_size": 10,
+    "lr_scheduler_gamma": 0.5,
+    "weight_decay": 0.001,
+    "train_max_samples": 10000,
+    "validation_max_samples": 1000,
+    "test_max_samples": 1000
+  },
+  "testing": {
+    "pr_max_threshold": 4,
+    "pr_n_threshold": 100
+  }
+}

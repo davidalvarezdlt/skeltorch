@@ -1,0 +1,10 @@
+librosa
+matplotlib
+numpy
+progressbar2
+pydub
+requests
+skeltorch
+srt
+torch
+torchaudio

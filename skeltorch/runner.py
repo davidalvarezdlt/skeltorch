@@ -199,7 +199,8 @@ class Runner:
             epoch = epochs_list[-1]
         if epoch and epoch not in epochs_list:
             raise ValueError('Epoch {} not found.'.format(epoch))
-        self.load_states(epoch, device[0])
+        else:
+            self.load_states(epoch, device[0])
 
         # Start from the checkpoint epoch if exists. Otherwise it will start at
         # 1. Add +1 so max_epochs is respected.

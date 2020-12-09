@@ -46,10 +46,12 @@ class Execution:
             self.args['experiments_path'] = os.path.join(
                 self.args['base_path'], 'experiments'
             )
+
         if self.args['data_path'] is None:
             self.args['data_path'] = os.path.join(
                 self.args['base_path'], 'data'
             )
+
         if 'device' in self.args and self.args['device'] is None:
             self.args['device'] = [
                 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -67,8 +69,10 @@ class Execution:
     def _validate_main_args(self):
         if not os.path.exists(self.args['experiments_path']):
             exit('Experiments path does not exist.')
+
         if not os.path.exists(self.args['data_path']):
             exit('Data path does not exist.')
+
         if 'device' in self.args:
             for device in self.args['device']:
                 if not re.match(r'(^cpu$|^cuda$|^cuda:\d+$)', device):
@@ -77,14 +81,18 @@ class Execution:
                         torch.device(device).index > \
                         torch.cuda.device_count() - 1:
                     exit('Device {} is not available.'.format(device))
+
             if len(self.args['device']) != len(set(self.args['device'])):
                 exit('Device argument not valid. Duplicated device found.')
+
             if 'cpu' in self.args['device'] and len(self.args['device']) > 1:
                 exit('Invalid choice of devices. You can not mix CPU and GPU '
                      'devices.')
+
             if 'cuda' in self.args['device'] and len(self.args['device']) > 1:
                 exit('Invalid choice of devices. You must specify device'
                      'indexes if multiple GPUs are required.')
+
             if 'cpu' not in self.args['device'] and \
                     len(self.args['device']) > torch.cuda.device_count():
                 exit('Invalid choice of devices. You requested {} GPUs but '

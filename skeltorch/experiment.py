@@ -197,8 +197,8 @@ class Experiment:
             dev (bool): ``--dev`` command argument.
             compare (bool): ``--compare`` command argument.
         """
-        tensorboard_dir = self.paths['tensorboard'] if not compare else \
-            experiments_path
+        tensorboard_dir = self.paths['tensorboard'] if not compare \
+            else experiments_path
         if dev:
             os.system('tensorboard dev upload --logdir {} --name "{}"'.format(
                 tensorboard_dir, self.experiment_name
@@ -215,6 +215,8 @@ class Experiment:
         self.logger.info('=' * len('Information about experiment "{}"'.format(
             self.experiment_name
         )))
+
+        # Logging of configuration fields
         self.logger.info('Configuration:')
         for config_cat, config_cat_data in sorted(
                 self.configuration.__dict__.items()
@@ -224,6 +226,8 @@ class Experiment:
             self.logger.info('\t{}'.format(config_cat))
             for config_param, config_val in config_cat_data.items():
                 self.logger.info('\t\t{}: {}'.format(config_param, config_val))
+
+        # Logging of experiment checkpoints
         if len(self.checkpoints_get()) > 0:
             self.logger.info('Available checkpoints:')
             self.logger.info(

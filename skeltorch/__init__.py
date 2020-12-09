@@ -9,6 +9,194 @@ from skeltorch.runner import Runner
 import sys
 
 __all__ = ['Skeltorch', 'Data', 'Runner']
+__cli_commands__ = {
+    'args': [
+        {
+            'id': '--experiment-name',
+            'type': str,
+            'nargs': None,
+            'default': None,
+            'required': True,
+            'help': 'Name of the experiment.'
+        },
+        {
+            'id': '--base-path',
+            'type': str,
+            'nargs': None,
+            'required': False,
+            'default': os.path.dirname(os.path.dirname(sys.argv[0])),
+            'help': 'Base path from which other default paths are referenced.'
+        },
+        {
+            'id': '--experiments-path',
+            'type': str,
+            'nargs': None,
+            'default': None,
+            'required': False,
+            'help': 'Folder where the experiments are stored.'
+        },
+        {
+            'id': '--data-path',
+            'type': str,
+            'nargs': None,
+            'default': None,
+            'required': False,
+            'help': 'Folder where the data is stored.'
+        },
+        {
+            'id': '--verbose',
+            'type': bool,
+            'nargs': None,
+            'default': None,
+            'required': False,
+            'help': 'Whether to log using standard output.'
+        }
+    ],
+    'commands': [
+        {
+            'name': 'init',
+            'args': [
+                {
+                    'id': '--config-path',
+                    'type': str,
+                    'nargs': None,
+                    'default': None,
+                    'required': True,
+                    'help': 'Path of the configuration file used to create '
+                            'the experiment.'
+                },
+                {
+                    'id': '--config-schema-path',
+                    'type': str,
+                    'nargs': None,
+                    'default': None,
+                    'required': False,
+                    'help': 'Path of the schema file used to validate the '
+                            'configuration.'
+                },
+                {
+                    'id': '--seed',
+                    'type': int,
+                    'nargs': None,
+                    'default': 0,
+                    'required': False,
+                    'help': 'Seed used to initialize random value generators.'
+                }
+            ]
+        },
+        {
+            'name': 'info',
+            'args': []
+        },
+        {
+            'name': 'train',
+            'args': [
+                {
+                    'id': '--epoch',
+                    'type': int,
+                    'nargs': None,
+                    'default': None,
+                    'required': False,
+                    'help': 'Epoch from which to continue the training.'
+                },
+                {
+                    'id': '--max-epochs',
+                    'type': int,
+                    'nargs': None,
+                    'default': 999,
+                    'required': False,
+                    'help': 'Maximum number of epochs to complete.'
+                },
+                {
+                    'id': '--log-period',
+                    'type': int,
+                    'nargs': None,
+                    'default': 100,
+                    'required': False,
+                    'help': 'Number of mini-batch iterations between status '
+                            'logs.'
+                },
+                {
+                    'id': '--num-workers',
+                    'type': int,
+                    'nargs': None,
+                    'default': 1,
+                    'required': False,
+                    'help': 'Number of workers used when loading the data.'
+                },
+                {
+                    'id': '--device',
+                    'type': int,
+                    'nargs': '+',
+                    'default': None,
+                    'required': False,
+                    'help': 'PyTorch-friendly name of the device where the '
+                            'model should be stored and trained/tested.'
+                }
+            ]
+        },
+        {
+            'name': 'test',
+            'args': [
+                {
+                    'id': '--epoch',
+                    'type': int,
+                    'nargs': None,
+                    'default': None,
+                    'required': True,
+                    'help': 'Epoch used to run the testing.'
+                },
+                {
+                    'id': '--num-workers',
+                    'type': int,
+                    'nargs': None,
+                    'default': 1,
+                    'required': False,
+                    'help': 'Number of workers used when loading the data.'
+                },
+                {
+                    'id': '--device',
+                    'type': int,
+                    'nargs': '+',
+                    'default': None,
+                    'required': False,
+                    'help': 'PyTorch-friendly name of the device where the '
+                            'model should be stored and trained/tested.'
+                }
+            ]
+        },
+        {
+            'name': 'tensorboard',
+            'args': [
+                {
+                    'id': '--port',
+                    'type': int,
+                    'nargs': None,
+                    'default': 6006,
+                    'required': False,
+                    'help': 'Port where to run the TensorBoard instance.'
+                },
+                {
+                    'id': '--dev',
+                    'type': bool,
+                    'nargs': None,
+                    'default': None,
+                    'required': False,
+                    'help': 'Whether to use a TensorBoard.dev instance.'
+                },
+                {
+                    'id': '--compare',
+                    'type': bool,
+                    'nargs': None,
+                    'default': None,
+                    'required': False,
+                    'help': 'Whether to run TensorBoard on the experiments '
+                            'root folder.'
+                }
+            ]
+        }
+    ]
+}
 
 
 class Skeltorch:
@@ -35,7 +223,7 @@ class Skeltorch:
     logger = None
     _parser = argparse.ArgumentParser()
     _subparsers = dict()
-    _commandHandlers = dict()
+    _command_handlers = dict()
 
     def __init__(self, data, runner):
         """``skeltorch.Skeltorch`` constructor.
@@ -64,141 +252,68 @@ class Skeltorch:
         self.logger = logging.getLogger('skeltorch')
 
     def _init_default_parsers(self):
+        def _add_args(parser, args):
+            for arg in args:
+                if arg['type'] == bool:
+                    parser.add_argument(
+                        arg['id'],
+                        action='store_true',
+                        required=arg['required'],
+                        help=arg['help']
+                    )
+                else:
+                    parser.add_argument(
+                        arg['id'],
+                        type=arg['type'],
+                        nargs=arg['nargs'],
+                        default=arg['default'],
+                        required=arg['required'],
+                        help=arg['help']
+                    )
+
+        # Create main parser
         self._subparsers['_creator'] = self._parser.add_subparsers(
             dest='command', required=True
         )
-        self._parser.add_argument(
-            '--experiment-name', required=True, help='Name of the experiment'
-        )
-        self._parser.add_argument(
-            '--base-path',
-            default=os.path.dirname(os.path.dirname(sys.argv[0])),
-            help='Base path from which other default paths are referenced'
-        )
-        self._parser.add_argument(
-            '--experiments-path',
-            help='Experiments path'
-        )
-        self._parser.add_argument('--data-path', help='Data path')
-        self._parser.add_argument(
-            '--verbose',
-            action='store_true',
-            help='Log to standard output'
-        )
+        _add_args(self._parser, __cli_commands__['args'])
 
-        # init parser
-        init_subparser = self.create_parser('init')
-        init_subparser.add_argument(
-            '--config-path', required=True, help='Configuration file path'
-        )
-        init_subparser.add_argument(
-            '--config-schema-path',
-            default=None,
-            help='Configuration schema file path'
-        )
-        init_subparser.add_argument(
-            '--seed',
-            type=int,
-            default=0,
-            help='Seed for random value generators'
-        )
-
-        # info subparser
-        self.create_parser('info')
-
-        # train parser
-        train_subparser = self.create_parser('train')
-        train_subparser.add_argument(
-            '--epoch',
-            type=int,
-            default=None,
-            help='Starting epoch from which continue the training'
-        )
-        train_subparser.add_argument(
-            '--max-epochs',
-            type=int,
-            default=999,
-            help='Maximum number of epochs to perform'
-        )
-        train_subparser.add_argument(
-            '--log-period',
-            type=int,
-            default=100,
-            help='Number of iterations between logs'
-        )
-        train_subparser.add_argument(
-            '--num-workers',
-            type=int,
-            default=1,
-            help='Number of DataLoader workers'
-        )
-        train_subparser.add_argument(
-            '--device',
-            nargs='+',
-            default=None,
-            help='PyTorch-friendly device names'
-        )
-
-        test_subparser = self.create_parser('test')
-        test_subparser.add_argument(
-            '--epoch',
-            type=int,
-            required=True,
-            help='Epoch from which run the test'
-        )
-        test_subparser.add_argument(
-            '--num-workers',
-            type=int,
-            default=1,
-            help='Number of DataLoader workers'
-        )
-        test_subparser.add_argument(
-            '--device',
-            nargs='+',
-            default=None,
-            help='PyTorch-friendly device names'
-        )
-
-        tensorboard_subparser = self.create_parser('tensorboard')
-        tensorboard_subparser.add_argument(
-            '--port', default=6006, help='Port where to run TensorBoard'
-        )
-        tensorboard_subparser.add_argument(
-            '--dev', action='store_true', help='Use TensorBoard.dev'
-        )
-        tensorboard_subparser.add_argument(
-            '--compare',
-            action='store_true',
-            help='Run TensorBoard on all experiments'
-        )
+        # Create secondary parsers
+        for command in __cli_commands__['commands']:
+            secondary_parser = self.create_parser(command['name'])
+            _add_args(secondary_parser, command['args'])
 
     def _init_default_commands(self):
-        self.create_command(
-            self._subparsers['init'],
-            self.experiment.create,
-            ['data_path', 'config_path', 'config_schema_path', 'seed',
-             'verbose']
-        )
-        self.create_command(
-            self._subparsers['info'],
-            self.experiment.info,
-            []
-        )
-        self.create_command(
-            self._subparsers['train'],
-            self.runner.train,
-            ['epoch', 'max_epochs', 'log_period', 'device']
-        )
-        self.create_command(
-            self._subparsers['test'],
-            self.runner.test,
-            ['epoch', 'device']
-        )
-        self.create_command(
-            self._subparsers['tensorboard'],
-            self.experiment.run_tensorboard,
-            ['port', 'dev', 'compare', 'experiments_path']
-        )
+        __cli_handlers__ = {
+            'init': {
+                'handler': self.experiment.create,
+                'params': [
+                    'data_path', 'config_path', 'config_schema_path', 'seed',
+                    'verbose'
+                ]
+            },
+            'info': {
+                'handler': self.experiment.info,
+                'params': []
+            },
+            'train': {
+                'handler': self.runner.train,
+                'params': ['epoch', 'max_epochs', 'log_period', 'device']
+            },
+            'test': {
+                'handler': self.runner.test,
+                'params': ['epoch', 'device']
+            },
+            'tensorboard': {
+                'handler': self.experiment.run_tensorboard,
+                'params': ['port', 'dev', 'compare', 'experiments_path']
+            }
+        }
+        for command in __cli_commands__['commands']:
+            self.create_command(
+                self._subparsers[command['name']],
+                __cli_handlers__[command['name']]['handler'],
+                __cli_handlers__[command['name']]['params']
+            )
 
     def get_parser(self, command_name):
         """Gets an already-created parser.
@@ -231,8 +346,8 @@ class Skeltorch:
             argparse.ArgumentParser: Argument parser associated to
             `command_name`.
         """
-        self._subparsers[command_name] = self._subparsers[
-            '_creator'].add_parser(name=command_name)
+        self._subparsers[command_name] = \
+            self._subparsers['_creator'].add_parser(name=command_name)
         return self._subparsers[command_name]
 
     def create_command(
@@ -255,18 +370,26 @@ class Skeltorch:
         command_name = list(self._subparsers.keys())[
             list(self._subparsers.values()).index(command_parser)
         ]
-        self._commandHandlers[command_name] = (
+        self._command_handlers[command_name] = (
             command_handler, command_args_keys
         )
 
     def run(self):
         """Runs a Skeltorch project."""
+
+        # Loading of the skeltorch.Execution instance
         self.execution.load(self._parser.parse_args())
+
+        # Initialization of the skeltorch.Experiment instance
         self.experiment.init(
             self.execution.args['experiment_name'],
             self.execution.args['experiments_path']
         )
+
+        # Initialization of the skeltorch.Data instance
         self.data.init(self.experiment, self.logger)
+
+        # Conditional loading of the skeltorch.Experiment instance
         if self.execution.command not in ['init']:
             self.experiment.load(
                 data_path=self.execution.args['data_path'],
@@ -274,18 +397,21 @@ class Skeltorch:
                 'num_workers' in self.execution.args else 1,
                 verbose=self.execution.args['verbose']
             )
+
+        # Conditional initialization of the skeltorch.Runner instance
         if self.execution.command not in ['init', 'tensorboard', 'info']:
             self.runner.init(
                 self.experiment, self.logger, self.execution.args['device']
             )
-        command_handler, command_args_keys = self._commandHandlers[
+
+        # Retrieve command handler and its parameters
+        command_handler, command_params = self._command_handlers[
             self.execution.command
         ]
-        commands_args = {
-            command_arg_key: self.execution.args[command_arg_key]
-            for command_arg_key in command_args_keys
+        command_params = {
+            param: self.execution.args[param] for param in command_params
         }
-        # Compatibility purposes until next release
         if command_handler == self.runner.test:
-            commands_args['device'] = commands_args['device'][0]
-        command_handler(**commands_args)
+            # Compatibility purposes until release 2.0
+            command_params['device'] = command_params['device'][0]
+        command_handler(**command_params)

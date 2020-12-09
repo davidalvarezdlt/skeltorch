@@ -46,17 +46,19 @@ class Configuration:
             jsonschema.exceptions.ValidationError: Raised when the
             configuration file does not match the schema.
         """
-        if not config_schema_path:
-            self.logger.warning(
-                'Configuration schema not provided. The configuration file '
-                'will not be validated.'
-            )
         with open(config_path, 'r') as config_file:
             config_content = json.load(config_file)
+
         if config_schema_path:
             with open(config_schema_path, 'r') as schema_file:
                 schema_content = json.load(schema_file)
                 jsonschema.validate(config_content, schema_content)
+        else:
+            self.logger.warning(
+                'Configuration schema not provided. The configuration file '
+                'will not be validated.'
+            )
+
         for config_cat, config_cat_items in config_content.items():
             setattr(self, config_cat, dict())
             for config_param, config_value in config_cat_items.items():

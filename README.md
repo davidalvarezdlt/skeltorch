@@ -1,6 +1,8 @@
 # Skeltorch: light-weight framework for PyTorch projects
-[![Downloads](https://pepy.tech/badge/skeltorch)](https://pepy.tech/project/skeltorch)
-[![Documentation Status](https://readthedocs.org/projects/skeltorch/badge/?version=latest)](https://skeltorch.readthedocs.io/en/latest/?badge=latest)
+![](https://img.shields.io/github/v/release/davidalvarezdlt/skeltorch)
+[![](https://pepy.tech/badge/skeltorch)](https://pepy.tech/project/skeltorch)
+[![](https://readthedocs.org/projects/skeltorch/badge/?version=latest)](https://skeltorch.readthedocs.io/en/latest/?badge=latest)
+![](https://img.shields.io/github/license/davidalvarezdlt/skeltorch)
 
 ## What is Skeltorch?
 Skeltorch is a **light-weight framework that helps researchers to prototype faster using PyTorch**. To do so, Skeltorch

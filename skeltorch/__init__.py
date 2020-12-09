@@ -261,7 +261,6 @@ class Skeltorch:
 
     def run(self):
         """Runs a Skeltorch project."""
-        print(sys.argv)
         self.execution.load(self._parser.parse_args())
         self.experiment.init(
             self.execution.args['experiment_name'],

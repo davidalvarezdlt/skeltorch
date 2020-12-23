@@ -166,6 +166,57 @@ __cli_commands__ = {
             ]
         },
         {
+            'name': 'test_sample',
+            'args': [
+                {
+                    'id': '--sample',
+                    'type': str,
+                    'nargs': None,
+                    'default': None,
+                    'required': True,
+                    'help': 'Unique identifier of the sample to test.'
+                },
+                {
+                    'id': '--epoch',
+                    'type': int,
+                    'nargs': None,
+                    'default': None,
+                    'required': True,
+                    'help': 'Epoch used to run the testing.'
+                },
+                {
+                    'id': '--num-workers',
+                    'type': int,
+                    'nargs': None,
+                    'default': 1,
+                    'required': False,
+                    'help': 'Number of workers used when loading the data.'
+                },
+                {
+                    'id': '--device',
+                    'type': int,
+                    'nargs': '+',
+                    'default': None,
+                    'required': False,
+                    'help': 'PyTorch-friendly name of the device where the '
+                            'model should be stored and trained/tested.'
+                }
+            ]
+        },
+        {
+            'name': 'create_release',
+            'args': [
+                {
+                    'id': '--epoch',
+                    'type': int,
+                    'nargs': None,
+                    'default': None,
+                    'required': True,
+                    'help': 'Epoch used to run the testing.'
+                }
+            ]
+        },
+        {
             'name': 'tensorboard',
             'args': [
                 {
@@ -215,15 +266,6 @@ class Skeltorch:
         runner (skeltorch.Runner): Runner object.
         logger (logging.Logger): Logger object.
     """
-    execution = None
-    experiment = None
-    configuration = None
-    data = None
-    runner = None
-    logger = None
-    _parser = argparse.ArgumentParser()
-    _subparsers = dict()
-    _command_handlers = dict()
 
     def __init__(self, data, runner):
         """``skeltorch.Skeltorch`` constructor.
@@ -240,6 +282,9 @@ class Skeltorch:
             self.configuration, self.data, self.logger
         )
         self.runner = runner
+        self._parser = argparse.ArgumentParser()
+        self._subparsers = dict()
+        self._command_handlers = dict()
         self._init_default_parsers()
         self._init_default_commands()
 
@@ -252,6 +297,12 @@ class Skeltorch:
         self.logger = logging.getLogger('skeltorch')
 
     def _init_default_parsers(self):
+        # Create main parser
+        self._subparsers['_creator'] = self._parser.add_subparsers(
+            dest='command', required=True
+        )
+
+        # Create a function to add arguments to the parsers
         def _add_args(parser, args):
             for arg in args:
                 if arg['type'] == bool:
@@ -271,13 +322,8 @@ class Skeltorch:
                         help=arg['help']
                     )
 
-        # Create main parser
-        self._subparsers['_creator'] = self._parser.add_subparsers(
-            dest='command', required=True
-        )
+        # Add the arguments to the different parsers
         _add_args(self._parser, __cli_commands__['args'])
-
-        # Create secondary parsers
         for command in __cli_commands__['commands']:
             secondary_parser = self.create_parser(command['name'])
             _add_args(secondary_parser, command['args'])
@@ -302,6 +348,14 @@ class Skeltorch:
             'test': {
                 'handler': self.runner.test,
                 'params': ['epoch', 'device']
+            },
+            'test_sample': {
+                'handler': self.runner.test_sample,
+                'params': ['sample', 'epoch', 'device']
+            },
+            'create_release': {
+                'handler': self.experiment.create_release,
+                'params': ['epoch']
             },
             'tensorboard': {
                 'handler': self.experiment.run_tensorboard,
@@ -399,7 +453,9 @@ class Skeltorch:
             )
 
         # Conditional initialization of the skeltorch.Runner instance
-        if self.execution.command not in ['init', 'tensorboard', 'info']:
+        if self.execution.command not in [
+            'init', 'info', 'create_release', 'tensorboard'
+        ]:
             self.runner.init(
                 self.experiment, self.logger, self.execution.args['device']
             )

@@ -20,17 +20,17 @@ class Data:
         loaders (dict): Dictionary containing the loaders of the train,
         validation and test splits. To be loaded using ``load_loaders()``.
     """
-    experiment = None
-    logger = None
-    datasets = {'train': None, 'validation': None, 'test': None}
-    loaders = {'train': None, 'validation': None, 'test': None}
-    _dont_save_atts = {'_dont_save_atts', '__dict__', '__module__', '__doc__',
-                       '__weakref__', 'datasets', 'experiment', 'loaders',
-                       'logger'}
+    _dont_save_atts = {
+        '_dont_save_atts', '__dict__', '__module__', '__doc__', '__weakref__',
+        'datasets', 'experiment', 'loaders', 'logger'
+    }
 
     def __init__(self):
         """``skeltorch.Data`` constructor."""
-        pass
+        self.experiment = None
+        self.logger = None
+        self.datasets = {'train': None, 'validation': None, 'test': None}
+        self.loaders = {'train': None, 'validation': None, 'test': None}
 
     def init(self, experiment, logger):
         """Lazy-loading of ``skeltorch.Data`` attributes.
@@ -116,8 +116,8 @@ class Data:
             data = dict()
             attrs_list = [
                 att for att in dir(self)
-                if not callable(self.__getattribute__(att)) and att not in
-                self._dont_save_atts
+                if not callable(self.__getattribute__(att))
+                and att not in self._dont_save_atts
             ]
             for att in attrs_list:
                 data[att] = self.__getattribute__(att)

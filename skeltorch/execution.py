@@ -18,12 +18,11 @@ class Execution:
         command (str): Name of the executed command.
         args (dict): Dictionary containing the arguments of the execution.
     """
-    command = None
-    args = None
 
     def __init__(self):
         """``skeltorch.Execution`` constructor."""
-        pass
+        self.command = None
+        self.args = None
 
     def load(self, args):
         """Loads the executed command and its arguments inside the execution.

@@ -40,5 +40,5 @@ python -m glow --experiment-name my_experiment test --epoch 10
 7. (Optional) Visualize results using tensorboard:
 
 ```
-tensorboard --logdir experiments/my_experiment
+python -m glow --experiment-name my_experiment tensorboard
 ```

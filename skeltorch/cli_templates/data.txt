@@ -1,0 +1,13 @@
+import skeltorch
+
+
+class <PROJECT_NAME_CAMELCASE>Data(skeltorch.Data):
+
+    def create(self, data_path):
+        raise NotImplementedError
+
+    def load_datasets(self, data_path):
+        raise NotImplementedError
+
+    def load_loaders(self, data_path, num_workers):
+        raise NotImplementedError

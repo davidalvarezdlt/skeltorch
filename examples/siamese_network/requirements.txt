@@ -1,10 +1,4 @@
 librosa
-matplotlib
-numpy
 progressbar2
-pydub
-requests
-skeltorch
-srt
-torch
+skeltorch~=1.2.0
 torchaudio

@@ -1,10 +1,11 @@
 # First steps
-Skeltorch is designed in order to work under Python modules. Nowadays, most researchers create a single script for each
-different task. For instance, it is normal to find files named ``train.py`` or ``test.py``, each one with its associated
-data pipeline.
+Skeltorch is designed in order to work under Python modules. Nowadays, most
+researchers create a single script for each different task. For instance, it is
+normal to find files named ``train.py`` or ``test.py``, each one with its
+associated data pipeline.
 
-**Skeltorch works completely different. Instead of creating different files, each data pipeline is called using a
-different command on your own module**.
+**Skeltorch works completely different. Instead of creating different files,
+each data pipeline is called using a different command on your own module**.
 
 In general, to run a module you can use:
 

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset"
+      ]
+    },
+    "training": {
+      "type": "object",
+      "properties": {
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lr": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "batch_size",
+        "lr"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "training"
+  ]
+}

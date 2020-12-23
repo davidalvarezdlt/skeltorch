@@ -30,17 +30,16 @@ class Runner:
         losses_epoch (dict): Epoch losses of both training and validation
         splits.
     """
-    experiment = None
-    logger = None
-    model = None
-    optimizer = None
-    counters = {'epoch': 0, 'train_it': 0, 'validation_it': 0}
-    losses_it = {'train': {}, 'validation': {}}
-    losses_epoch = {'train': {}, 'validation': {}}
 
     def __init__(self):
         """``skeltorch.Runner`` constructor."""
-        pass
+        self.experiment = None
+        self.logger = None
+        self.model = None
+        self.optimizer = None
+        self.counters = {'epoch': 0, 'train_it': 0, 'validation_it': 0}
+        self.losses_it = {'train': {}, 'validation': {}}
+        self.losses_epoch = {'train': {}, 'validation': {}}
 
     def init(self, experiment, logger, device):
         """Lazy-loading of ``skeltorch.Runner`` attributes.
@@ -97,33 +96,45 @@ class Runner:
             device (str): first ordered element of ``--device`` command
             argument.
         """
+        pass
 
-    def load_states(self, epoch, device):
+    def load_states(self, epoch, device, is_release=False):
         """Loads the states from the checkpoint associated with ``epoch``.
 
         Args:
             epoch (int): ``--epoch`` command argument.
             device (str): ``--device`` command argument.
+            is_release (bool): Whether or not the epoch is a release.
         """
-        checkpoint_data = self.experiment.checkpoint_load(epoch, device)
+        checkpoint_data = self.experiment.checkpoint_load(
+            epoch, device, is_release
+        )
+
+        # Load model state, present in both standard and release checkpoints
         if isinstance(self.model, torch.nn.DataParallel):
             self.model.module.load_state_dict(checkpoint_data['model'])
         else:
             self.model.load_state_dict(checkpoint_data['model'])
-        self.optimizer.load_state_dict(checkpoint_data['optimizer'])
-        random.setstate(checkpoint_data['random_states'][0])
-        np.random.set_state(checkpoint_data['random_states'][1])
-        torch.set_rng_state(checkpoint_data['random_states'][2].cpu())
-        if torch.cuda.is_available() and checkpoint_data['random_states'][3]:
-            torch.cuda.set_rng_state(checkpoint_data['random_states'][3].cpu())
-        self.counters = checkpoint_data['counters']
-        # Compatibility purposes until next release
-        if 'losses' in checkpoint_data:
-            self.losses_epoch = checkpoint_data['losses']
-        else:
-            self.losses_epoch = checkpoint_data['losses_epoch']
-            self.losses_it = checkpoint_data['losses_it']
-        self.load_states_others(checkpoint_data)
+
+        # Load other states, only for standard checkpoints
+        if not is_release:
+            self.optimizer.load_state_dict(checkpoint_data['optimizer'])
+            random.setstate(checkpoint_data['random_states'][0])
+            np.random.set_state(checkpoint_data['random_states'][1])
+            torch.set_rng_state(checkpoint_data['random_states'][2].cpu())
+            if torch.cuda.is_available() \
+                    and checkpoint_data['random_states'][3]:
+                torch.cuda.set_rng_state(
+                    checkpoint_data['random_states'][3].cpu()
+                )
+            self.counters = checkpoint_data['counters']
+            # Compatibility purposes until next release
+            if 'losses' in checkpoint_data:
+                self.losses_epoch = checkpoint_data['losses']
+            else:
+                self.losses_epoch = checkpoint_data['losses_epoch']
+                self.losses_it = checkpoint_data['losses_it']
+            self.load_states_others(checkpoint_data)
 
     def load_states_others(self, checkpoint_data):
         """Loads the states of other objects from the checkpoint associated
@@ -162,6 +173,34 @@ class Runner:
         with ``epoch``."""
         return {}
 
+    def restore_states_if_possible(self, epoch, device):
+        """Restores the state given the input parameters.
+
+        Given a list of possible standard and release checkpoints, this method
+        works as follows:
+
+        - If `--epoch` is given, it restores its standard checkpoint or fails.
+        - If `--epoch` is not given but there are standard checkpoints in the
+        experiment, it restarts the last available standard checkpoint.
+        - If `--epoch` is not given and there are no standard checkpoints,
+        tries to load the last release checkpoint.
+        - If none of the previous conditions is met, it restores nothing.
+
+        Args:
+            epoch (int): ``--epoch`` command argument.
+            device (str): ``--device`` command argument.
+        """
+        epochs_standard = self.experiment.checkpoints_get()
+        epochs_release = self.experiment.checkpoints_get(get_releases=True)
+        if epoch and epoch in epochs_standard:
+            self.load_states(epoch, device[0])
+        elif epoch and epoch not in epochs_standard:
+            raise ValueError('Epoch {} not found.'.format(epoch))
+        elif not epoch and len(epochs_standard) > 0:
+            self.load_states(epochs_standard[-1], device[0])
+        elif not epoch and len(epochs_release) > 0:
+            self.load_states(epochs_release[-1], device[0], is_release=True)
+
     def train(self, epoch, max_epochs, log_period, device):
         """Runs the ``train`` pipeline.
 
@@ -194,13 +233,7 @@ class Runner:
             device (list): ``--device`` command argument.
         """
         # Restore checkpoint if exists or is forced
-        epochs_list = self.experiment.checkpoints_get()
-        if epoch is None and len(epochs_list) > 0:
-            epoch = epochs_list[-1]
-        if epoch and epoch not in epochs_list:
-            raise ValueError('Epoch {} not found.'.format(epoch))
-        elif epoch:
-            self.load_states(epoch, device[0])
+        self.restore_states_if_possible(epoch, device)
 
         # Start from the checkpoint epoch if exists. Otherwise it will start at
         # 1. Add +1 so max_epochs is respected.
@@ -420,6 +453,17 @@ class Runner:
         """Runs the ``test`` pipeline.
 
         Args:
+            epoch (int or None): ``--epoch`` command argument.
+            device (list): first ordered element of ``--device`` command
+            argument.
+        """
+        raise NotImplementedError
+
+    def test_sample(self, sample, epoch, device):
+        """Runs the ``test_sample`` pipeline.
+
+        Args:
+            sample (str): unique identifier of the sample to test.
             epoch (int or None): ``--epoch`` command argument.
             device (list): first ordered element of ``--device`` command
             argument.

@@ -1,4 +1,3 @@
-skeltorch
-tensorboardX
-torch
-torchvision
+scipy~=1.5.4
+skeltorch~=1.2.0
+torchvision~=0.8.2

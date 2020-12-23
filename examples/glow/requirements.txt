@@ -1,4 +1,2 @@
-skeltorch
-tensorboardX
-torch
-torchvision
+skeltorch~=1.2.0
+torchvision~=0.8.2

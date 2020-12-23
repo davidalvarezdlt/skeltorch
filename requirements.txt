@@ -1,6 +1,5 @@
 jsonschema~=3.2.0
 numpy~=1.19.4
-pre-commit~=2.9.3
 tensorboard~=2.4.0
 tensorboardX~=2.1
-torch~=1.7.0
+torch~=1.7.1

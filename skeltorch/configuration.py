@@ -16,8 +16,6 @@ class Configuration:
     Attributes:
         logger (logging.Logger): Logger object.
     """
-    seed = None
-    logger = None
 
     def __init__(self, logger):
         """``skeltorch.Configuration`` constructor.
@@ -25,6 +23,7 @@ class Configuration:
         Args:
             logger (logging.Logger): Logger object.
         """
+        self.seed = None
         self.logger = logger
 
     def create(self, config_path, config_schema_path=None):
@@ -114,4 +113,7 @@ class Configuration:
             config_param (str): Identifier of the configuration parameter.
             config_value (any): Configuration value to set.
         """
-        getattr(self, config_cat)[config_param] = config_value
+        if config_cat in dir(self):
+            getattr(self, config_cat)[config_param] = config_value
+        else:
+            setattr(self, config_cat, {config_param: config_value})

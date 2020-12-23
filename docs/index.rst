@@ -34,3 +34,4 @@ Welcome to Skeltorch!
 
    examples/mnist
    examples/glow
+   examples/siamese-network

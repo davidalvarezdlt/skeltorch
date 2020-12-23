@@ -1,0 +1,20 @@
+import skeltorch
+from .model import <PROJECT_NAME_CAMELCASE>Model
+
+
+class <PROJECT_NAME_CAMELCASE>Runner(skeltorch.Runner):
+
+    def init_model(self, device):
+        self.model = <PROJECT_NAME_CAMELCASE>Model().to(device)
+
+    def init_optimizer(self, device):
+        raise NotImplementedError
+
+    def train_step(self, it_data, device):
+        raise NotImplementedError
+
+    def test(self, epoch, device):
+        raise NotImplementedError
+
+    def test_sample(self, sample, epoch, device):
+        raise NotImplementedError

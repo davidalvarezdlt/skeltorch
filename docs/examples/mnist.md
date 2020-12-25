@@ -7,9 +7,6 @@ The model used in this example is the same used in the
 files exposed in this tutorial from our
 [official GitHub repository](https://github.com/davidalvarezdlt/skeltorch/tree/master/examples/mnist_classifier).
 
-You can also download a sample experiment of this project trained for ``--max-epochs 10`` from
-[this link](https://www.dropbox.com/s/8xz0ax1v01hxmiy/mnist_example.zip?dl=0).
-
 ## 1. File structure
 The first step is to create the files required to create a Skeltorch project. In this example, we will create not only
 mandatory files, but also a ``config.schema.json`` file to validate the configuration file:

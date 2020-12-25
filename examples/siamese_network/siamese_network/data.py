@@ -13,9 +13,6 @@ class SiameseData(skeltorch.Data):
     data_meta_validation = {}
     data_meta_test = {}
 
-    def get_conf(self, *args):
-        return self.experiment.configuration.get(args)
-
     def create(self, data_path):
         # Download VCTK dataset
         torchaudio.datasets.VCTK(root=data_path, download=True)

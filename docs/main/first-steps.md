@@ -13,35 +13,38 @@ In general, to run a module you can use:
 python -m <your_module_name> <global_args> command_name <command_args>
 ```
 
-Where ``your_module_name`` is the name of the folder containing the ``__init__.py`` file and each ``command_name`` is
-associated to one data pipeline. By default, Skeltorch provides three different pipelines:
+Where ``your_module_name`` is the name of the folder containing the
+``__init__.py`` file and each ``command_name`` is associated with one data
+pipeline. By default, Skeltorch provides seven different pipelines:
 
 - ``init``: creates a new experiment.
+- ``info``: prints the information associated with an experiment.
 - ``train``: trains and validates a model.
 - ``test``: tests a previously-trained model.
+- ``test_sample``: test a previously-trained model on a single data item.
+- ``create_release``: creates a checkpoint containing model state only.
+- ``tensorboard``: runs TensorBoard.
 
-In this first steps tutorial, you will learn how to implement the methods required in order to make these pipelines work
-as expected. At the end of it, you will be ready to create simple projects which will be easily shareable with minimum
-effort and focusing on what is really important: the data and the model.
+In this first steps tutorial, you will learn how to implement the methods
+required in order to make these pipelines work as expected. At the end of it,
+you will be ready to create simple projects which will be easily shareable
+with minimum effort and focusing on what is really important: the data and the
+model.
 
 ## 1. Creating the file structure
-In order to create a Skeltorch project, you need to create a Python module. To do so, it is enough to create a folder
-with a ``__init__.py`` file inside.
-
-In addition to this file, you will also create different files to handle different parts of your project. Specifically:
-
-- A ``__main__.py`` file to store initialization code.
-- A ``data.py`` file to implement the class handling the data used in the project.
-- A ``model.py`` file to implement your own models.
-- A ``runner.py`` file to implement the class extending default pipeline behavior.
-
-Finally, create a ``config.json`` file to store configuration parameters and, optionally, a ``config.schema.json`` to
-validate it. You may also want to create other auxiliary files such as a ``requirements.txt`` file or a ``README.md``
-document. These documents should never be placed inside the module's folder.
-
-In the end, you should have a file structure similar to:
+In order to create a Skeltorch project, you need to create a Python module.
+Skeltorch comes with a CLI that helps you do precisely that:
 
 ```
+skeltorch create --name <your_module_name>
+```
+
+This will create different files and folders. Specifically, the result will
+look like:
+
+```
+data/
+experiments/
 your_module_name/
     __init__.py
     __main__.py
@@ -52,134 +55,166 @@ config.json
 config.schema.json
 ```
 
-You may also want to have a folder to store experiments and data and, optionally, another for scripts.
+The folders ``data/`` and ``experiments/`` are self-explanatory. The same for
+the configuration files
 
 ## 2. Creating the data class
-The data class, stored in ``data.py``, handles all functions related to the data of the project. It also covers the
-creation of ``torch.utils.data.Dataset`` and ``torch.utils.data.DataLoader`` objects.
+The data class, stored in ``/your_module_name/data.py``, handles all functions
+related with the data of the project. It also covers the creation of
+``torch.utils.data.Dataset`` and ``torch.utils.data.DataLoader`` objects.
 
-In order to create your own `skeltorch.Data` class, you should extend it and implement:
+In order to create your own `skeltorch.Data` class, you should extend it and
+implement:
 
-- ``create()``: called **only** when creating a new experiment. All class parameters created inside this function are
-stored inside the experiment and restored on each prospective load.
-- ``load_datasets()``: loads a ``dict`` containing the datasets for the train, validation and test splits.
-- ``load_loaders()``: loads a ``dict`` containing the loaders for the train, validation and test splits.
+- ``create()``: called **only** when creating a new experiment. All class
+parameters created inside this function are stored inside the experiment and
+restored on each prospective load.
+- ``load_datasets()``: loads a ``dict`` containing the datasets for the train,
+validation and test splits.
+- ``load_loaders()``: loads a ``dict`` containing the loaders for the train,
+validation and test splits.
 
 ```
 import skeltorch
 
-class MyDataClass(skeltorch.Data):
+class YourModuleNameData(skeltorch.Data):
 
     def create(self):
-        pass
+        raise NotImplementedError
 
     def load_datasets(self):
-        pass
+        raise NotImplementedError
 
     def load_loaders(self):
-        pass
+        raise NotImplementedError
 ```
 
-Check out our examples to find real implementations of ``skeltorch.Data`` classes.
+Check out our examples to find real implementations of ``skeltorch.Data``
+classes.
 
 ## 3. Creating the runner class
-The runner class, stored in ``runner.py``, handles all functions related to the pipelines of the projects. It uses the
-attributes and methods of other objects (accessible as class parameters) to train, test and any other model-related
-tasks that may be needed for the project. Remember that the models should be stored inside the ``model.py`` file.
+The runner class, stored in ``/your_module_name/runner.py``, handles all
+functions related with the pipelines of the projects. It uses the attributes
+and methods of other objects (accessible as class parameters) to train, test
+and any other model-related tasks that may be needed for the project. Remember
+that the models should be stored inside the ``/your_module_name/model.py``
+file.
 
 **Train Pipeline**
 
-In order to use the default ``train`` pipeline of Skeltorch, you will need to implement the function ``step_train()``.
-This function receives the data of one iteration of the loader and returns the loss after being propagated through the
-model.
+In order to use the default ``train`` pipeline of Skeltorch, you will need to
+implement the function ``step_train()``. This function receives the data of
+one iteration of the loader and returns the loss after being propagated through
+the model.
 
-You will also have to initialize your model and optimizer implementing ``init_model()`` and ``init_optimizer()``
-respectively. Both of them must be stored as class parameters inside ``self.model`` and ``self.optimizer``,
+You will also have to initialize your model and optimizer implementing
+``init_model()`` and ``init_optimizer()`` respectively. Both of them must be
+stored as class parameters inside ``self.model`` and ``self.optimizer``,
 respectively.
 
 ```
 import skeltorch
+from .model import YourModuleNameModel
 
 
-class MyRunnerClass(skeltorch.Runner):
+class YourModuleNameRunner(skeltorch.Runner):
 
     def init_model(self, device):
-        pass
+        self.model = YourModuleNameModel().to(device)
 
     def init_optimizer(self, device):
-        pass
+        raise NotImplementedError
 
     def step_train(self, it_data, device):
-        pass
+        raise NotImplementedError
+
+    ...
 ```
 
-**Test Pipeline**
+**Test and test Sample Pipelines**
 
-In order to make the ``test`` pipeline work, you must implement your own ``test()`` method. As every test is different
-depending on the project you are working on, you will have to implement the entire functionality of it. Notice that
-this function is called when invoking the "test" command on your module.
+In order to make the ``test`` pipeline work, you must implement your own
+``test()`` method. As every test is different depending on the project you are
+working on, you will have to implement the entire functionality of it. Notice
+that this function is called when invoking the "test" command on your module.
+
+The ``test_sample`` pipeline is supposed to work the same way as the ``test``,
+but for a single data item identified by the parameter "sample".
 
 ```
 import skeltorch
+from .model import YourModuleNameModel
 
+class YourModuleNameRunner(skeltorch.Runner):
 
-class MyRunnerClass(skeltorch.Runner):
+    ...
 
-    def test(self, epoch, devices):
-        pass
+    def test(self, epoch, device):
+        raise NotImplementedError
+
+    def test_sample(self, sample, epoch, device):
+        raise NotImplementedError
 ```
 
-Check out our examples to find real implementations of ``skeltorch.Runner`` classes.
+Check out our examples to find real implementations of ``skeltorch.Runner``
+classes.
 
 ## 4. Creating the configuration file
 
-Every time that you create a new experiment (``init`` pipeline), you will be asked to provide a configuration file
-associated with it. These configuration parameters will be accessible through the configuration object of your
-experiment. Be careful, because these configuration parameters are immutable. This means that if you want to change one
-of them, you need to create a new experiment.
+Every time that you create a new experiment (``init`` pipeline), you will be
+asked to provide a configuration file associated with it. These configuration
+parameters will be accessible through the configuration object of your
+experiment. Be careful, because these configuration parameters are immutable.
+This means that if you want to change one of them, you need to create a new
+experiment.
 
-Configuration files are created using ``.json`` format. You must group your configuration parameters in "groups". No
-more than one level of grouping is allowed.
+Configuration files are created using ``.json`` format. You must organize your
+configuration parameters in "groups". No more than one level of grouping is
+allowed.
 
 ```
 {
-    "data": {
-        "dataset": "mnist",
-        "image_size": 32
-    },
-    "training": {
-        "batch_size": 32,
-        "lr": 1e-4
-    }
+  "data": {
+    "dataset": "<dataset_name>"
+  },
+  "training": {
+    "batch_size": 32,
+    "lr": 0.0001
+  }
 }
 ```
 
-This configuration will be automatically loaded in the ``configuration`` attribute of the ``experiment`` object. In this
-example, to get the configuration parameter named "dataset" of the group "data" you should call:
+This configuration will be automatically loaded in the ``configuration``
+attribute of the ``experiment`` object. In this example, to get the
+configuration parameter named "dataset" of the group "data" you should call:
 
 ```
 dataset = experiment.configuration.get('data', 'dataset')
 ```
 
-Check the API Documentation for a reference of attributes available in each object.
+The file ``config.schema.json``, also created automatically, can be used to
+validate the configuration parameters when creating a new experiment. This file
+is optional and, if used, should be passed in the ``--config-schema-path``
+argument of ``init``.
+
+Check the API Documentation for a reference of attributes available in each
+object.
 
 ## 5. Running Skeltorch
-The last step in order to create a Skeltorch project is to put everything together. Inside your ``__main__.py`` file:
+The last step in order to create a Skeltorch project is to put everything
+together. Inside your ``__main__.py`` file:
 
 ```
 from skeltorch
-from .data import MyDataClass
-from .runner import MyRunnerClass
+from .data import YourModuleNameData
+from .runner import YourModuleNameRunner
 
-# Create a Skeltorch object with your own Data and Runner classes
-skel = skeltorch.Skeltorch(
-    MyDataClass(),
-    MyRunnerClass()
-)
-
-# Run Skeltorch
-skel.run()
+skeltorch.Skeltorch(
+    YourModuleNameData(),
+    YourModuleNameRunner()
+).run()
 ```
 
-**Congratulations, your project is now ready to be executed!** The next step is to run it. Check *running default
-pipelines* for an extensive guide of how to do it.
+**Congratulations, your project is now ready to be executed!** The next step is
+to run it. Check *running default pipelines* for an extensive guide of how
+to do it.

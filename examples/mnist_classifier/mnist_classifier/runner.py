@@ -14,15 +14,21 @@ class MNISTClassifierRunner(skeltorch.Runner):
     def init_optimizer(self, device):
         self.optimizer = torch.optim.Adadelta(
             params=self.model.parameters(),
-            lr=self.experiment.configuration.get('training', 'lr')
+            lr=self.get_conf('training', 'lr')
         )
 
     def init_others(self, device):
         self.scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer=self.optimizer,
             step_size=1,
-            gamma=self.experiment.configuration.get('training', 'lr_gamma')
+            gamma=self.get_conf('training', 'lr_gamma')
         )
+
+    def load_states_others(self, checkpoint_data):
+        self.scheduler.load_state_dict(checkpoint_data['scheduler'])
+
+    def save_states_others(self):
+        return {'scheduler': self.scheduler.state_dict()}
 
     def train_step(self, it_data, device):
         it_data_input = it_data[0].to(device)
@@ -36,12 +42,7 @@ class MNISTClassifierRunner(skeltorch.Runner):
         self.test(None, device)
 
     def test(self, epoch, device):
-        if epoch and epoch not in self.experiment.checkpoints_get():
-            raise ValueError('Epoch {} not found.'.format(epoch))
-        elif epoch is not None:
-            self.init_model(device)
-            self.init_optimizer(device)
-            self.load_states(epoch, device)
+        self.restore_states_if_possible(epoch, device)
 
         # Log the start of the test
         self.logger.info('Starting the test of epoch {}...'.format(
@@ -80,8 +81,5 @@ class MNISTClassifierRunner(skeltorch.Runner):
         )
         self.experiment.tbx.flush()
 
-    def load_states_others(self, checkpoint_data):
-        self.scheduler.load_state_dict(checkpoint_data['scheduler'])
-
-    def save_states_others(self):
-        return {'scheduler': self.scheduler.state_dict()}
+    def test_sample(self, sample, epoch, device):
+        raise NotImplementedError

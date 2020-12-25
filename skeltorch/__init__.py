@@ -126,7 +126,7 @@ __cli_commands__ = {
                 },
                 {
                     'id': '--device',
-                    'type': int,
+                    'type': str,
                     'nargs': '+',
                     'default': None,
                     'required': False,
@@ -156,7 +156,7 @@ __cli_commands__ = {
                 },
                 {
                     'id': '--device',
-                    'type': int,
+                    'type': str,
                     'nargs': '+',
                     'default': None,
                     'required': False,
@@ -194,7 +194,7 @@ __cli_commands__ = {
                 },
                 {
                     'id': '--device',
-                    'type': int,
+                    'type': str,
                     'nargs': '+',
                     'default': None,
                     'required': False,

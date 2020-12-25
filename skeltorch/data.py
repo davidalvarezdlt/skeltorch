@@ -42,6 +42,60 @@ class Data:
         self.experiment = experiment
         self.logger = logger
 
+    def get_conf(self, config_cat, config_param):
+        """Shortcut to self.experiment.configuration.get().
+
+        Args:
+            config_cat (str): Category of the configuration parameter.
+            config_param (str): Identifier of the configuration parameter.
+
+        Return:
+            any: Retrieved configuration value.
+        """
+        return self.experiment.configuration.get(config_cat, config_param)
+
+    def create(self, data_path):
+        """Initializes data-related attributes required in the experiment.
+
+        The purpose of this method is to create all data-related parameters
+        which may take some time or that should be unique inside an experiment.
+        Called during the creation of a new experiment.
+
+        Some examples of these type of tasks are:
+
+        - Given a set of data samples, create appropriate splits.
+        - Compute the mean and standard deviation of a set of data to normalize
+            it.
+        - Compute features of the data whose computation time would be too
+            expensive if done on every iteration.
+
+        To preserve data, you must store it as a class attribute. It will be
+        automatically saved using the``save()`` method during the execution of
+        the ``init`` pipeline.
+
+        Args:
+            data_path (str): *--data-path* command argument.
+        """
+        raise NotImplementedError
+
+    def save(self, data_file_path: str):
+        """Saves class attributes inside a binary file stored in
+        ``data_file_path``.
+
+        Args:
+            data_file_path (str): Path where the binary file will be stored.
+        """
+        with open(data_file_path, 'wb') as data_file:
+            data = dict()
+            attrs_list = [
+                att for att in dir(self)
+                if not callable(self.__getattribute__(att))
+                and att not in self._dont_save_atts
+            ]
+            for att in attrs_list:
+                data[att] = self.__getattribute__(att)
+            pickle.dump(data, data_file)
+
     def load(self, data_path, data_file_path, num_workers):
         """Loads class attributes from the binary file stored in
         ``data_file_path``.
@@ -80,45 +134,3 @@ class Data:
             num_workers (int): Number of workers to use in the loaders.
         """
         raise NotImplementedError
-
-    def create(self, data_path):
-        """Initializes data-related attributes required in the experiment.
-
-        The purpose of this method is to create all data-related parameters
-        which may take some time or that should be unique inside an experiment.
-        Called during the creation of a new experiment.
-
-        Some examples of these type of tasks are:
-
-        - Given a set of data samples, create appropriate splits.
-        - Compute the mean and standard deviation of a set of data to normalize
-        it.
-        - Compute features of the data whose computation time would be too
-        expensive if done on every iteration.
-
-        To preserve data, you must store it as a class attribute. It will be
-        automatically saved using the``save()`` method during the execution of
-        the ``init`` pipeline.
-
-        Args:
-            data_path (str): *--data-path* command argument.
-        """
-        raise NotImplementedError
-
-    def save(self, data_file_path: str):
-        """Saves class attributes inside a binary file stored in
-        ``data_file_path``.
-
-        Args:
-            data_file_path (str): Path where the binary file will be stored.
-        """
-        with open(data_file_path, 'wb') as data_file:
-            data = dict()
-            attrs_list = [
-                att for att in dir(self)
-                if not callable(self.__getattribute__(att))
-                and att not in self._dont_save_atts
-            ]
-            for att in attrs_list:
-                data[att] = self.__getattribute__(att)
-            pickle.dump(data, data_file)

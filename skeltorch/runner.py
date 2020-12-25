@@ -98,6 +98,18 @@ class Runner:
         """
         pass
 
+    def get_conf(self, config_cat, config_param):
+        """Shortcut to self.experiment.configuration.get().
+
+        Args:
+            config_cat (str): Category of the configuration parameter.
+            config_param (str): Identifier of the configuration parameter.
+
+        Return:
+            any: Retrieved configuration value.
+        """
+        return self.experiment.configuration.get(config_cat, config_param)
+
     def load_states(self, epoch, device, is_release=False):
         """Loads the states from the checkpoint associated with ``epoch``.
 
@@ -181,9 +193,9 @@ class Runner:
 
         - If `--epoch` is given, it restores its standard checkpoint or fails.
         - If `--epoch` is not given but there are standard checkpoints in the
-        experiment, it restarts the last available standard checkpoint.
+            experiment, it restarts the last available standard checkpoint.
         - If `--epoch` is not given and there are no standard checkpoints,
-        tries to load the last release checkpoint.
+            tries to load the last release checkpoint.
         - If none of the previous conditions is met, it restores nothing.
 
         Args:
@@ -233,7 +245,7 @@ class Runner:
             device (list): ``--device`` command argument.
         """
         # Restore checkpoint if exists or is forced
-        self.restore_states_if_possible(epoch, device)
+        self.restore_states_if_possible(epoch, device[0])
 
         # Start from the checkpoint epoch if exists. Otherwise it will start at
         # 1. Add +1 so max_epochs is respected.
@@ -454,8 +466,8 @@ class Runner:
 
         Args:
             epoch (int or None): ``--epoch`` command argument.
-            device (list): first ordered element of ``--device`` command
-            argument.
+            device (str): first ordered element of ``--device`` command
+                argument (to be changed in release 2.0).
         """
         raise NotImplementedError
 
@@ -465,7 +477,6 @@ class Runner:
         Args:
             sample (str): unique identifier of the sample to test.
             epoch (int or None): ``--epoch`` command argument.
-            device (list): first ordered element of ``--device`` command
-            argument.
+            device (list): ``--device`` command argument.
         """
         raise NotImplementedError

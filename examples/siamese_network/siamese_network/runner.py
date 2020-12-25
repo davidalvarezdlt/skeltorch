@@ -11,9 +11,6 @@ class SiameseRunner(skeltorch.Runner):
     pr_n_threshold = None
     scheduler = None
 
-    def get_conf(self, *args):
-        return self.experiment.configuration.get(args)
-
     def init_model(self, device):
         self.model = SiameseNetwork(
             n_mfcc=self.get_conf('data', 'n_mfcc'),

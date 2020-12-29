@@ -1,11 +1,11 @@
 import skeltorch
-from .model import <PROJECT_NAME_CAMELCASE>Model
+from .model import {{ project_name_camelcase }}Model
 
 
-class <PROJECT_NAME_CAMELCASE>Runner(skeltorch.Runner):
+class {{ project_name_camelcase }}Runner(skeltorch.Runner):
 
     def init_model(self, device):
-        self.model = <PROJECT_NAME_CAMELCASE>Model().to(device)
+        self.model = {{ project_name_camelcase }}Model().to(device[0])
 
     def init_optimizer(self, device):
         raise NotImplementedError

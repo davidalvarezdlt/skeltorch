@@ -1,11 +1,11 @@
 # First steps
-Skeltorch is designed in order to work under Python modules. Nowadays, most
-researchers create a single script for each different task. For instance, it is
-normal to find files named ``train.py`` or ``test.py``, each one with its
-associated data pipeline.
+Skeltorch is designed to work under Python modules. Nowadays, most researchers
+create a single script for each different task. For instance, it is normal to
+find files named ``train.py`` or ``test.py``, each one with its associated data
+pipeline.
 
 **Skeltorch works completely different. Instead of creating different files,
-each data pipeline is called using a different command on your own module**.
+each data pipeline is called using a different command on your module**.
 
 In general, to run a module you can use:
 
@@ -26,14 +26,13 @@ pipeline. By default, Skeltorch provides seven different pipelines:
 - ``tensorboard``: runs TensorBoard.
 
 In this first steps tutorial, you will learn how to implement the methods
-required in order to make these pipelines work as expected. At the end of it,
-you will be ready to create simple projects which will be easily shareable
-with minimum effort and focusing on what is really important: the data and the
-model.
+required to make these pipelines work as expected. At the end of it, you will
+be ready to create simple projects which will be easily shareable with minimum
+effort and focusing on what is important: the data and the model.
 
 ## 1. Creating the file structure
-In order to create a Skeltorch project, you need to create a Python module.
-Skeltorch comes with a CLI that helps you do precisely that:
+To create a Skeltorch project, you need to create a Python module. Skeltorch
+comes with a CLI that helps you do precisely that:
 
 ```
 skeltorch create --name <your_module_name>
@@ -51,20 +50,18 @@ your_module_name/
     data.py
     model.py
     runner.py
-config.json
+config.default.json
 config.schema.json
+README.md
+requirements.txt
 ```
-
-The folders ``data/`` and ``experiments/`` are self-explanatory. The same for
-the configuration files
 
 ## 2. Creating the data class
 The data class, stored in ``/your_module_name/data.py``, handles all functions
 related with the data of the project. It also covers the creation of
 ``torch.utils.data.Dataset`` and ``torch.utils.data.DataLoader`` objects.
 
-In order to create your own `skeltorch.Data` class, you should extend it and
-implement:
+To create your own `skeltorch.Data` class, you should extend it and implement:
 
 - ``create()``: called **only** when creating a new experiment. All class
 parameters created inside this function are stored inside the experiment and
@@ -102,10 +99,9 @@ file.
 
 **Train Pipeline**
 
-In order to use the default ``train`` pipeline of Skeltorch, you will need to
-implement the function ``step_train()``. This function receives the data of
-one iteration of the loader and returns the loss after being propagated through
-the model.
+To use the default ``train`` pipeline of Skeltorch, you will need to implement
+the function ``step_train()``. This function receives the data of one iteration
+of the loader and returns the loss after being propagated through the model.
 
 You will also have to initialize your model and optimizer implementing
 ``init_model()`` and ``init_optimizer()`` respectively. Both of them must be
@@ -133,10 +129,10 @@ class YourModuleNameRunner(skeltorch.Runner):
 
 **Test and test Sample Pipelines**
 
-In order to make the ``test`` pipeline work, you must implement your own
-``test()`` method. As every test is different depending on the project you are
-working on, you will have to implement the entire functionality of it. Notice
-that this function is called when invoking the "test" command on your module.
+To make the ``test`` pipeline work, you must implement your own ``test()``
+method. As every test is different depending on the project you are working on,
+you will have to implement the entire functionality of it. Notice that this
+function is called when invoking the "test" command on your module.
 
 The ``test_sample`` pipeline is supposed to work the same way as the ``test``,
 but for a single data item identified by the parameter "sample".
@@ -201,8 +197,8 @@ Check the API Documentation for a reference of attributes available in each
 object.
 
 ## 5. Running Skeltorch
-The last step in order to create a Skeltorch project is to put everything
-together. Inside your ``__main__.py`` file:
+The last step to create a Skeltorch project is to put everything together.
+Inside your ``__main__.py`` file:
 
 ```
 from skeltorch

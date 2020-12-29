@@ -8,7 +8,7 @@ with open('requirements.txt', 'r') as f:
 
 setuptools.setup(
     name='skeltorch',
-    version='1.2.0',
+    version='2.0.0',
     author='David Álvarez de la Torre',
     author_email='davidalvarezdlt@gmail.com',
     description='Light-weight framework that helps researchers to prototype'
@@ -18,7 +18,7 @@ setuptools.setup(
     url='https://github.com/davidalvarezdlt/skeltorch',
     install_requires=requirements,
     packages=setuptools.find_packages(),
-    package_data={'skeltorch': ['cli_templates/*']},
+    package_data={'skeltorch': ['templates/*']},
     include_package_data=True,
     entry_points={'console_scripts': ['skeltorch=skeltorch.__main__:run']},
     classifiers=[

@@ -88,7 +88,7 @@ my_custom_parser.add_argument(
 
 # Link the parser with the method of the pipeline
 skel.create_command(
-    my_custom_parser,
+    'my_custom_command',
     my_custom_runner.my_custom_pipeline,
     ['custom_arg1', 'custom_arg2']
 )
@@ -97,15 +97,15 @@ skel.create_command(
 skel.run()
 ```
 
-Where the first parameter of the method is the parser, the second is the
-function to be called (if you write the  ``()`` you are already calling it,
-which **is not what we want**) and the third is a list of arguments to pass to
-the function. Two things are important when writing the names of the arguments
-to pass:
+Where the first parameter of the identifier of the command (used in both
+the parser and command), the second is the function to be called (if you write
+the  ``()`` you are already calling it, which **is not what we want**), and
+the third is a list of arguments to pass to the function. Two things are
+important when writing the names of the arguments to pass:
 
 - The name of the argument does not include the first two dashes.
 - While the arguments of the command are written with dashes
-  (``--custom-arg1``), these are automatically converted to underscores
+  (``--custom-arg1``), these are automatically converted to underlines
   (``custom_arg1``).
 
 ## 4. Running your custom pipeline
@@ -183,14 +183,11 @@ test_parser.add_argument(
 
 # Replace parser-function association of the test pipeline
 skel.create_command(
-    test_parser,
-    my_custom_runner.test,
-    ['epoch', 'device', 'arg3']
+    'test', my_custom_runner.test, ['epoch', 'device', 'arg3']
 )
 
 # Run Skeltorch
 skel.run()
-
 ```
 
 The ``test`` pipeline is now ready to read the argument ``--arg3`` from the

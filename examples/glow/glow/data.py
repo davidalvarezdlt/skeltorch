@@ -7,7 +7,9 @@ class GlowData(skeltorch.Data):
     transforms = None
 
     def create(self, data_path):
-        pass
+        torchvision.datasets.CIFAR10(
+            data_path, transform=self.transforms, download=True
+        )
 
     def load_datasets(self, data_path):
         self._load_transforms()
@@ -22,17 +24,13 @@ class GlowData(skeltorch.Data):
         self.loaders['train'] = torch.utils.data.DataLoader(
             dataset=self.datasets['train'],
             shuffle=True,
-            batch_size=self.experiment.configuration.get(
-                'training', 'batch_size'
-            ),
+            batch_size=self.get_conf('training', 'batch_size'),
             num_workers=num_workers
         )
         self.loaders['validation'] = torch.utils.data.DataLoader(
             dataset=self.datasets['validation'],
             shuffle=True,
-            batch_size=self.experiment.configuration.get(
-                'training', 'batch_size'
-            ),
+            batch_size=self.get_conf('training', 'batch_size'),
             num_workers=num_workers
         )
 

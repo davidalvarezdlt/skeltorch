@@ -9,8 +9,8 @@ this object will represent the category of the configuration parameter. You can
 create as many configuration categories and parameters as you wish, as long as
 the identifiers of the categories are not repeated.
 
-In order to create a configuration file, create a ``.json`` file containing
-valid JSON content:
+To create a configuration file, create a ``.json`` file containing valid JSON
+content:
 
 ```
 {

@@ -32,6 +32,6 @@ Welcome to Skeltorch!
    :maxdepth: 2
    :caption: Examples
 
-   examples/mnist
+   examples/mnist-classifier
    examples/glow
    examples/siamese-network

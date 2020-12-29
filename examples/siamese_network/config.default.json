@@ -21,9 +21,9 @@
     "lr_scheduler_step_size": 10,
     "lr_scheduler_gamma": 0.5,
     "weight_decay": 0.001,
-    "train_max_samples": 10000,
-    "validation_max_samples": 1000,
-    "test_max_samples": 1000
+    "train_max_samples": 100,
+    "validation_max_samples": 100,
+    "test_max_samples": 50
   },
   "testing": {
     "pr_max_threshold": 4,

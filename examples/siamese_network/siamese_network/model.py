@@ -2,9 +2,9 @@ import math
 import torch.nn as nn
 
 
-class SiameseNetwork(nn.Module):
+class SiameseNetworkModel(nn.Module):
     def __init__(self, n_mfcc, sf, cut_length, hop_length, n_components):
-        super(SiameseNetwork, self).__init__()
+        super(SiameseNetworkModel, self).__init__()
         input_t = math.ceil((sf * cut_length / hop_length)) + 1
         output_c = math.floor((n_mfcc - 7) / 2 + 1) - 10
         output_t = math.floor((input_t - 7) / 2 + 1) - 10

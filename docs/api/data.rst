@@ -2,4 +2,4 @@ skeltorch.Data
 ==============
 
 .. autoapiclass:: skeltorch.Data
-   :members:
+    :members:

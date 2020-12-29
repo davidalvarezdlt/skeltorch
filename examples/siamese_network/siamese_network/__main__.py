@@ -1,5 +1,5 @@
 import skeltorch
-from .data import SiameseData
-from .runner import SiameseRunner
+from .data import SiameseNetworkData
+from .runner import SiameseNetworkRunner
 
-skeltorch.Skeltorch(SiameseData(), SiameseRunner()).run()
+skeltorch.Skeltorch(SiameseNetworkData(), SiameseNetworkRunner()).run()

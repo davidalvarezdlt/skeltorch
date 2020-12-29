@@ -2,8 +2,8 @@
 
 Once you have implemented your custom ``skeltorch.Data`` and
 ``skeltorch.Runner`` classes, you are ready to run the default pipelines. In
-total, Skeltorch comes with 3 pre-defined pipelines associated with 7 different
-commands.
+total, Skeltorch comes with seven pre-defined pipelines associated with
+different commands.
 
 Before trying to run your Skeltorch project, remember to have it in your
 ``$PYTHONPATH`` or run your commands inside the folder containing your module.
@@ -13,8 +13,8 @@ To execute a pipeline, we will use the syntax:
 python -m <your_module_name> <global_args> command_name
 ```
 
-Where ``command_name`` is the command associated to each pipeline and
-``<global_args>`` are arguments which are available in all pipelines.
+Where ``command_name`` is the command associated with each pipeline and
+``<global_args>`` are arguments that are available in all pipelines.
 
 **Global Arguments**
 
@@ -72,7 +72,7 @@ The ``train`` pipeline is an implementation of the standard training procedure,
 where a `torch.utils.data.DataLoader` is used to obtain the data of each
 iteration until no more data is available. At that point, the epoch counter is
 increased and a checkpoint is saved inside the experiment. In order to run the
-train pipeline successfully, you will need:
+training pipeline successfully, you will need:
 
 - A valid implementation of the methods ``load_datasets()`` and
   ``load_loaders()`` of the data class. These methods must load the data
@@ -121,7 +121,7 @@ need:
 
 - A valid implementation of the method ``test()`` of the runner class.
 - A valid implementation of auxiliary methods, such as the ones used in the
-  train pipeline.
+  training pipeline.
 
 ```
 python -m <your_module_name> <global_args> test <test_args>
@@ -140,12 +140,12 @@ python -m <your_module_name> <global_args> test <test_args>
 
 The ``test_sample`` pipeline follows the sample principle as the ``test``
 pipeline, but for single data instances. The identifier of the data instance is
-passed using a CLI argument. To run the test sample pipeline succesfully, you
+passed using a CLI argument. To run the test sample pipeline successfully, you
 will need:
 
 - A valid implementation of the method ``test_sample()`` of the runner class.
 - A valid implementation of auxiliary methods, such as the ones used in the
-  train pipeline.
+  training pipeline.
 
 ```
 python -m <your_module_name> <global_args> test_sample <test_sample_args>

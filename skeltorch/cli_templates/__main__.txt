@@ -1,8 +1,0 @@
-import skeltorch
-from .data import <PROJECT_NAME_CAMELCASE>Data
-from .runner import <PROJECT_NAME_CAMELCASE>Runner
-
-skeltorch.Skeltorch(
-    <PROJECT_NAME_CAMELCASE>Data(),
-    <PROJECT_NAME_CAMELCASE>Runner()
-).run()

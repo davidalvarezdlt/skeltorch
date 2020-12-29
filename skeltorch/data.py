@@ -16,13 +16,20 @@ class Data:
         experiment (skeltorch.Experiment): Experiment object.
         logger (logging.Logger): Logger object.
         datasets (dict): Dictionary containing the datasets of the train,
-        validation and test splits. To be loaded using ``load_datasets()``.
+            validation and test splits. To be loaded using ``load_datasets()``.
         loaders (dict): Dictionary containing the loaders of the train,
-        validation and test splits. To be loaded using ``load_loaders()``.
+            validation and test splits. To be loaded using ``load_loaders()``.
     """
     _dont_save_atts = {
-        '_dont_save_atts', '__dict__', '__module__', '__doc__', '__weakref__',
-        'datasets', 'experiment', 'loaders', 'logger'
+        '_dont_save_atts',
+        '__dict__',
+        '__module__',
+        '__doc__',
+        '__weakref__',
+        'datasets',
+        'experiment',
+        'loaders',
+        'logger',
     }
 
     def __init__(self):
@@ -43,7 +50,7 @@ class Data:
         self.logger = logger
 
     def get_conf(self, config_cat, config_param):
-        """Shortcut to self.experiment.configuration.get().
+        """Shortcut to ``self.experiment.configuration.get()``.
 
         Args:
             config_cat (str): Category of the configuration parameter.
@@ -65,20 +72,20 @@ class Data:
 
         - Given a set of data samples, create appropriate splits.
         - Compute the mean and standard deviation of a set of data to normalize
-            it.
+          it.
         - Compute features of the data whose computation time would be too
-            expensive if done on every iteration.
+          expensive if done on every iteration.
 
         To preserve data, you must store it as a class attribute. It will be
-        automatically saved using the``save()`` method during the execution of
+        automatically saved using the ``save()`` method during the execution of
         the ``init`` pipeline.
 
         Args:
-            data_path (str): *--data-path* command argument.
+            data_path (str): ``--data-path`` command argument.
         """
         raise NotImplementedError
 
-    def save(self, data_file_path: str):
+    def save(self, data_file_path):
         """Saves class attributes inside a binary file stored in
         ``data_file_path``.
 
@@ -101,7 +108,7 @@ class Data:
         ``data_file_path``.
 
         Args:
-            data_path (str): *--data-path* command argument.
+            data_path (str): ``--data-path`` command argument.
             data_file_path (str): Path where the binary file is stored.
             num_workers (int): Number of workers to use in the loaders.
         """
@@ -119,7 +126,7 @@ class Data:
         ``torch.utils.data.Dataset`` objects of the project.
 
         Args:
-            data_path (str): *--data-path* parameter.
+            data_path (str): ``--data-path`` parameter.
         """
         raise NotImplementedError
 
@@ -130,7 +137,7 @@ class Data:
         ``torch.utils.data.DataLoader`` objects of the project.
 
         Args:
-            data_path (str): *--data-path* command argument.
+            data_path (str): ``--data-path`` command argument.
             num_workers (int): Number of workers to use in the loaders.
         """
         raise NotImplementedError

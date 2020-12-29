@@ -14,6 +14,7 @@ class Configuration:
     how to manage configuration files inside your project.
 
     Attributes:
+        seed (int): Initialized ``--seed`` command argument.
         logger (logging.Logger): Logger object.
     """
 
@@ -37,13 +38,13 @@ class Configuration:
         Args:
             config_path (str): ``--config-path`` command argument.
             config_schema_path (str or None): ``--config-schema-path`` command
-            argument.
+                argument.
 
         Raises:
             json.decoder.JSONDecodeError: Raised when the format of one of the
-            `.json` files is not valid.
+                `.json` files is not valid.
             jsonschema.exceptions.ValidationError: Raised when the
-            configuration file does not match the schema.
+                configuration file does not match the schema.
         """
         with open(config_path, 'r') as config_file:
             config_content = json.load(config_file)

@@ -8,7 +8,7 @@ import tensorboardX
 
 
 class Experiment:
-    """Skeltorch execution class.
+    """Skeltorch experiment class.
 
     An experiment object stores the information related to an experiment and is
     in charge of handling the files belonging to it. It provides an easy
@@ -83,7 +83,6 @@ class Experiment:
         )
 
     def _init_seed(self, seed):
-        seed = 0 if seed is None else seed  # Compatibility purposes
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
@@ -121,6 +120,8 @@ class Experiment:
             config_path (str): ``--config-path`` command argument.
             config_schema_path (str): ``--config-schema-path`` command
                 argument.
+            seed (int): ``--seed`` command argument.
+            verbose (bool): ``--verbose`` command argument.
         """
         os.makedirs(self.paths['experiment'])
         os.makedirs(self.paths['checkpoints'])
@@ -143,7 +144,7 @@ class Experiment:
 
         Args:
             get_releases (bool): Whether to get the list of release
-            checkpoints.
+                checkpoints.
 
         Returns:
             list: List containing the epochs with available checkpoint.
@@ -167,7 +168,7 @@ class Experiment:
 
         Returns:
             dict: Dictionary containing the states stored inside the
-            checkpoint.
+                checkpoint.
         """
         checkpoint_path = os.path.join(
             self.paths['checkpoints'], '{}.checkpoint{}.pkl'.format(
@@ -185,7 +186,7 @@ class Experiment:
 
         Args:
             checkpoint_data (dict): Dictionary containing the states to store
-            inside the checkpoint.
+                inside the checkpoint.
             epoch (int): Epoch number used to identify the checkpoint.
             is_release (bool): Whether or not the epoch is a release.
         """
@@ -226,7 +227,7 @@ class Experiment:
                     get_releases=c_type == 'release'
                 )]))
             else:
-                self.logger.info('No {} checkpoints available'.format(c_type))
+                print('No {} checkpoints available'.format(c_type))
 
     def create_release(self, epoch):
         """Creates a release checkpoint of a certain epoch.
@@ -234,7 +235,7 @@ class Experiment:
         A release checkpoint only contains the data associated with the model.
 
         Args:
-            epoch (int): epoch from which to create a release checkpoint.
+            epoch (int): Epoch from which to create a release checkpoint.
         """
         if epoch not in self.checkpoints_get():
             self.logger.error('Epoch {} does not exist.'.format(epoch))

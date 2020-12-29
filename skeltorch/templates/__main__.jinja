@@ -1,0 +1,8 @@
+import skeltorch
+from .data import {{ project_name_camelcase }}Data
+from .runner import {{ project_name_camelcase }}Runner
+
+skeltorch.Skeltorch(
+    {{ project_name_camelcase }}Data(),
+    {{ project_name_camelcase }}Runner()
+).run()

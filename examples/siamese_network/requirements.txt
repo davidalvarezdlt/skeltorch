@@ -1,4 +1,2 @@
-librosa
-progressbar2
 skeltorch~=1.2.0
-torchaudio
+torchaudio~=0.7.2

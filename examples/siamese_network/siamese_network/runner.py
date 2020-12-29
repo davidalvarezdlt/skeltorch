@@ -1,24 +1,24 @@
-from .model import SiameseNetwork
+from .model import SiameseNetworkModel
 import numpy as np
 import skeltorch
 import torch
 import torch.nn.functional as F
 
 
-class SiameseRunner(skeltorch.Runner):
+class SiameseNetworkRunner(skeltorch.Runner):
     loss_margin = None
     pr_max_threshold = None
     pr_n_threshold = None
     scheduler = None
 
     def init_model(self, device):
-        self.model = SiameseNetwork(
+        self.model = SiameseNetworkModel(
             n_mfcc=self.get_conf('data', 'n_mfcc'),
             sf=self.get_conf('data', 'sf_target'),
             cut_length=self.get_conf('data', 'cut_length'),
             hop_length=self.get_conf('data', 'hop_length'),
             n_components=self.get_conf('model', 'n_components')
-        ).to(device)
+        ).to(device[0])
 
     def init_optimizer(self, device):
         self.optimizer = torch.optim.Adam(
@@ -28,9 +28,6 @@ class SiameseRunner(skeltorch.Runner):
         )
 
     def init_others(self, device):
-        self.loss_margin = self.get_conf('model', 'loss_margin')
-        self.pr_max_threshold = self.get_conf('testing', 'pr_max_threshold')
-        self.pr_n_threshold = self.get_conf('testing', 'pr_n_threshold')
         self.scheduler = torch.optim.lr_scheduler.StepLR(
             self.optimizer,
             step_size=self.get_conf('training', 'lr_scheduler_step_size'),
@@ -44,8 +41,11 @@ class SiameseRunner(skeltorch.Runner):
         return {'scheduler': self.scheduler.state_dict()}
 
     def train_step(self, it_data, device):
-        y1, y2 = self.model(it_data[0].to(device), it_data[1].to(device))
-        return self.compute_loss(y1, y2, it_data[2].to(device))
+        y1, y2 = self.model(it_data[0].to(device[0]), it_data[1].to(device[0]))
+        return SiameseNetworkRunner.compute_loss(
+            y1, y2, it_data[2].to(device[0]),
+            self.get_conf('model', 'loss_margin')
+        )
 
     def train_before_epoch_tasks(self, device):
         self.experiment.tbx.add_scalar(
@@ -59,11 +59,8 @@ class SiameseRunner(skeltorch.Runner):
         self.test(None, device)
 
     def test(self, epoch, device):
-        if epoch is not None and \
-                epoch not in self.experiment.checkpoints_get():
-            raise ValueError('Epoch {} not found.'.format(epoch))
-        elif epoch is not None:
-            self.load_states(epoch, device)
+        if epoch is not None:
+            self.restore_states_if_possible(epoch, device)
 
         # Log start of test
         self.logger.info(
@@ -77,10 +74,13 @@ class SiameseRunner(skeltorch.Runner):
         for it_data in self.experiment.data.loaders['test']:
             with torch.no_grad():
                 y1, y2 = self.model(
-                    it_data[0].to(device), it_data[1].to(device)
+                    it_data[0].to(device[0]), it_data[1].to(device[0])
                 )
                 loss.append(
-                    self.compute_loss(y1, y2, it_data[2].to(device)).item()
+                    self.compute_loss(
+                        y1, y2, it_data[2].to(device[0]),
+                        self.get_conf('model', 'loss_margin')
+                    ).item()
                 )
             gt += it_data[2].tolist()
             pred += (F.pairwise_distance(y1, y2)).tolist()
@@ -88,8 +88,10 @@ class SiameseRunner(skeltorch.Runner):
         # Compute loss, metrics and distance measures
         loss_mean = np.mean(loss)
         tp, fp, tn, fn, precision, recall, f_score = self.compute_metrics(
-            np.array(gt), np.array(pred), self.pr_max_threshold,
-            self.pr_n_threshold
+            np.array(gt),
+            np.array(pred),
+            self.get_conf('testing', 'pr_max_threshold'),
+            self.get_conf('testing', 'pr_n_threshold')
         )
         mean_dist_same_speaker = np.mean(
             [pred[i] for i in range(len(gt)) if gt[i] == 0]
@@ -118,15 +120,20 @@ class SiameseRunner(skeltorch.Runner):
 
         # Log end of test
         self.logger.info(
-            'Test of epoch {} finished. Results logged in TensorBoard.'
-            .format(self.counters['epoch'])
+            'Test of epoch {} finished. Results logged in TensorBoard.'.format(
+                self.counters['epoch']
+            )
         )
 
-    def compute_loss(self, y1, y2, is_different_speaker):
+    def test_sample(self, sample, epoch, device):
+        raise NotImplementedError
+
+    @staticmethod
+    def compute_loss(y1, y2, is_different_speaker, loss_margin):
         euclidean_distance = F.pairwise_distance(y1, y2)
-        loss = (1 - is_different_speaker) * euclidean_distance.pow(2) + \
-            is_different_speaker * F.relu(
-            self.loss_margin - euclidean_distance
+        loss = (1 - is_different_speaker) * euclidean_distance.pow(2)
+        loss += is_different_speaker * F.relu(
+            loss_margin - euclidean_distance
         ).pow(2)
         return (0.5 * loss).mean()
 

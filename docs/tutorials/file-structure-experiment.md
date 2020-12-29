@@ -23,7 +23,7 @@ experiment_name/
 Where:
 
 - ``experiment_name/``: is the folder containing all data related to the
-  experiment. It can be easily compressed a shared.
+  experiment. It can be easily compressed and shared.
 - ``experiment_name/checkpoints``: contains the checkpoints of the experiment.
 - ``experiment_name/results/``: contains results that may be generated in the
   ``test`` or other custom pipelines.
@@ -38,7 +38,7 @@ Where:
 
 You can access the absolute path of these files and folders by accessing the
 ``paths`` attribute of the ``skeltorch.Experiment`` object. For instance, to
-get the results folder inside your ``test`` method:
+get the results path inside your ``test`` method:
 
 ```
 import skeltorch

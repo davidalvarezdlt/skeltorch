@@ -1,1 +1,0 @@
-skeltorch~=<SKELTORCH_VERSION>

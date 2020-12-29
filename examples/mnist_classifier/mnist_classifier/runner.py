@@ -9,7 +9,7 @@ class MNISTClassifierRunner(skeltorch.Runner):
     scheduler = None
 
     def init_model(self, device):
-        self.model = MNISTClassifierModel().to(device)
+        self.model = MNISTClassifierModel().to(device[0])
 
     def init_optimizer(self, device):
         self.optimizer = torch.optim.Adadelta(
@@ -31,8 +31,8 @@ class MNISTClassifierRunner(skeltorch.Runner):
         return {'scheduler': self.scheduler.state_dict()}
 
     def train_step(self, it_data, device):
-        it_data_input = it_data[0].to(device)
-        it_data_target = it_data[1].to(device)
+        it_data_input = it_data[0].to(device[0])
+        it_data_target = it_data[1].to(device[0])
         it_data_prediction = self.model(it_data_input)
         return F.nll_loss(it_data_prediction, it_data_target)
 
@@ -42,20 +42,19 @@ class MNISTClassifierRunner(skeltorch.Runner):
         self.test(None, device)
 
     def test(self, epoch, device):
-        self.restore_states_if_possible(epoch, device)
+        if epoch is not None:
+            self.restore_states_if_possible(epoch, device)
 
         # Log the start of the test
-        self.logger.info('Starting the test of epoch {}...'.format(
-            self.counters['epoch'])
+        self.logger.info(
+            'Starting the test of epoch {}...'.format(self.counters['epoch'])
         )
 
-        # Create a variable to store correct predictions
-        n_correct = 0
-
         # Iterate over the entire test split
+        n_correct = 0
         for it_data in self.experiment.data.loaders['test']:
-            it_data_input = it_data[0].to(device)
-            it_data_target = it_data[1].to(device)
+            it_data_input = it_data[0].to(device[0])
+            it_data_target = it_data[1].to(device[0])
 
             # Propagate the input through the model
             with torch.no_grad():
@@ -74,12 +73,35 @@ class MNISTClassifierRunner(skeltorch.Runner):
 
         # Log accuracy using textual logger and TensorBoard
         self.logger.info('Test of epoch {} | Accuracy: {:.2f}%'.format(
-            self.counters['epoch'], test_acc)
-        )
+            self.counters['epoch'], test_acc
+        ))
         self.experiment.tbx.add_scalar(
             'accuracy/epoch/test', test_acc, self.counters['epoch']
         )
-        self.experiment.tbx.flush()
 
     def test_sample(self, sample, epoch, device):
-        raise NotImplementedError
+        if epoch is not None:
+            self.restore_states_if_possible(epoch, device)
+
+        # Verify that the sample ID is valid
+        sample = int(sample)
+        if sample < 0 or sample > len(self.experiment.data.datasets['test']):
+            self.logger.error('Invalid sample ID.')
+            exit()
+
+        # Predict category for the sample data item
+        it_data = self.experiment.data.datasets['test'][sample]
+        with torch.no_grad():
+            it_data_prediction = self.model(
+                it_data[0].to(device[0]).unsqueeze(0)
+            ).squeeze(0)
+
+        # Compute the class with maximum probability and print it
+        it_data_class = it_data_prediction.argmax()
+        self.logger.info(
+            'Predicted class {} with probability {} for sample {}. Real class '
+            'is {}.'.format(
+                it_data_class, it_data_prediction[it_data_class].exp(),
+                sample, it_data[1]
+            )
+        )

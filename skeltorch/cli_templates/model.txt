@@ -1,9 +1,0 @@
-import torch
-
-
-class <PROJECT_NAME_CAMELCASE>Model(torch.nn.Module):
-    def __init__(self):
-        super(<PROJECT_NAME_CAMELCASE>Model, self).__init__()
-
-    def forward(self, x):
-        raise NotImplementedError

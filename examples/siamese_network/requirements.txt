@@ -1,2 +1,2 @@
-skeltorch~=1.2.0
+skeltorch~=2.0.0
 torchaudio~=0.7.2

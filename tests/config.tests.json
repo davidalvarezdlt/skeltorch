@@ -1,0 +1,10 @@
+{
+  "category_1": {
+    "item_1": 1234,
+    "item_2": 5678
+  },
+  "category_2": {
+    "item_1": "item_1_value",
+    "item_2": "item_2_value"
+  }
+}

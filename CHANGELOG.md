@@ -1,5 +1,5 @@
 ### v2.0.0
-+ Major refractoring of the code that breaks compatibility with Skeltorch
++ Major refactoring of the code that breaks compatibility with Skeltorch
   v1.X.X.
 + You can now create Skeltorch projects by calling ``skeltorch create
   --name <project_name>``.
